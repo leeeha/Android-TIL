@@ -16,16 +16,16 @@ at java.lang.Class.**getConstructor**(Class.java:1759)
 ```kotlin
 
 class SomeFragment : Fragment(){
-	// ... 
+    // ... 
 
-  companion object {
-	  @JvmStatic
-    fun newInstance() = SomeFragment().apply {
-		    arguments = Bundle().apply { 
-	        putString("key", "value")
-	      }
+    companion object {
+        @JvmStatic
+        fun newInstance() = SomeFragment().apply {
+                arguments = Bundle().apply { 
+                putString("key", "value")
+            }
+        }
     }
-  }
 }
 ```
 
