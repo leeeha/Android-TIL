@@ -186,7 +186,7 @@ dependencies {
 
 ![image](https://github.com/leeeha/Android-TIL/assets/68090939/d4b1b00b-7251-418d-982c-a40bb94b2c74)
 
-> *libs can't be called in this context by implicit receiver. Use the explicit one if necessary*
+> libs can't be called in this context by implicit receiver. Use the explicit one if necessary
 
 Gradle 8.1 미만 버전에서 발생하는 IntelliJ 상의 오류이다. (참고: [KTIJ-19369](https://youtrack.jetbrains.com/issue/KTIJ-19369/False-positive-cant-be-called-in-this-context-by-implicit-receiver-with-plugins-in-Gradle-version-catalogs-as-a-TOML-file))
 
