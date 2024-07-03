@@ -293,13 +293,13 @@ class MemoRepository @Inject contructor(
 - 해당 모듈이 어떤 컴포넌트에 설치될 것인지 명시하는 어노테이션
 - **올바르지 않은 컴포넌트 또는 스코프를 사용하면 컴파일 에러 발생하므로 주의**
 
-![image](https://github.com/leeeha/Android-TIL/assets/68090939/00621358-21cb-4fc2-89b5-e0496f6f8a43)
+<img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/00621358-21cb-4fc2-89b5-e0496f6f8a43"/>
 
 만약 ActivityComponent, FragmentComponent 모두 MyModule을 필요로 하는 경우에는? 
 
 **상위 컴포넌트인 ActivityComponent에 모듈 설치를 고려**할 수 있다. **하위 컴포넌트는 상위 컴포넌트의 의존성에 접근**할 수 있기 때문이다.
 
-![image](https://github.com/leeeha/Android-TIL/assets/68090939/d5914091-e917-4e47-b5b2-f1890323f7f5)
+<img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/d5914091-e917-4e47-b5b2-f1890323f7f5"/>
 
 ### Hilt Module의 제약사항
 
