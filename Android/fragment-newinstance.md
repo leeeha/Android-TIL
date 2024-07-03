@@ -2,15 +2,14 @@
 
 일반적인 경우에는 문제가 안 되겠지만, 화면 회전 등으로 **Configuration Change가 발생**하면 액티비티가 파괴되었다가 재생성 되며 그 안에 있는 **프래그먼트도 재생성** 된다. 이때, 프래그먼트의 기본 생성자를 만들어주지 않으면 다음과 같은 런타임 에러가 발생할 수 있다.
 
-> Caused by: androidx.fragment.app.Fragment$**InstantiationException**: 
+>Caused by: androidx.fragment.app.Fragment$**InstantiationException**: 
 Unable to instantiate fragment com.runnect.runnect.util.custom.CommonDialogFragment: 
 **could not find Fragment constructor** at androidx.fragment.app.Fragment.instantiate(Fragment.java:678)
 
-Caused by: java.lang.**NoSuchMethodException**: 
+>Caused by: java.lang.**NoSuchMethodException**: 
 com.runnect.runnect.util.custom.CommonDialogFragment.<init> []
 at java.lang.Class.**getConstructor0**(Class.java:2363)
 at java.lang.Class.**getConstructor**(Class.java:1759)
-> 
 
 위와 같은 에러를 방지하려면, newInstance() 함수에서 프래그먼트의 기본 생성자를 정의해주면 된다. 
 
