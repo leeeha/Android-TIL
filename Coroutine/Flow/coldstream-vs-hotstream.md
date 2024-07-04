@@ -216,8 +216,18 @@ launch 코루틴 빌더 내에서 5개의 코루틴을 생성하고, 각 코루�
 
 위의 3가지를 모두 충족해야 Hot Stream이라고 볼 수 있으며, Channel은 이에 해당한다. 
 
+# 차이점 요약 
+
+|  | Cold Stream | Hot Stream |
+| --- | --- | --- |
+| 데이터를 생산하는 위치 | 내부 | 외부 |
+| 데이터를 생산하는 시점 | 소비자가 소비를 시작할 때 생산 <br> (Lazy Stream) | 소비자와 무관하게 생산 <br> (Eager Stream)  |
+| 생산자에 대응하는 소비자 개수 | 하나의 생산자에 하나의 소비자 존재  <br> (Unicast) | 하나의 생산자에 다수의 소비자 존재 <br> (Multicast) |
+| 사용 사례  | 서버에 데이터 요청, DB 쿼리 등  | - 모든 수신자를 최신 상태로 갱신 <br> - 키보드, 클릭 이벤트 등  |
+| 예시 | Flow | Channel, StateFlow, SharedFlow |
+
 # 참고자료
 
 - [Flow와 Channel, Cold Stream과 Hot Stream](https://medium.com/@apfhdznzl/flow와-channel-cold-stream과-hot-stream-c42c64cf4996)
 - https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/
-
+- https://github.com/mdb1217/TIL/blob/main/Kotlin/Coroutine/Hot%20Stream%20VS%20Cold%20Stream.md
