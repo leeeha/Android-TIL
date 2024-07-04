@@ -232,7 +232,7 @@ class MyFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             // repeatOnLifecycle 블록은 프래그먼트 뷰의 생명주기에 따라 
-            // STARTED 이후에 시작되고 STOPPED 이후에는 취소된다. 
+            // STARTED ~ STOPPED 범위에서만 실행된다. 
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.stateFlow.collect { value ->
                     // Update UI with the value
@@ -296,7 +296,7 @@ class MainActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 // collect 연산자로 주가의 변경사항 관찰 
                 stockViewModel.stockPrice.collect { price ->
-                    // 새로운 주가로 뷰 업데이트 
+                    // 새로운 데이터로 View 업데이트 
                     stockPriceTextView.text = "Stock Price: $price"
                 }
             }
@@ -352,15 +352,15 @@ class EventListener(
         // onEach 연산자로 이벤트 flow 구독
         eventBus.events
             .onEach { event ->
-                // 다른 타입의 이벤트 구분하기 위해 when 사용 
+                // when문으로 여러 타입의 이벤트 구분 
                 when (event) {
                     is Event.EventA -> handleEventA()
                     is Event.EventB -> handleEventB()
                     is Event.EventC -> handleEventC(event.value)
                 }
             }
-            // 주어진 코루틴 스코프 내에서 이벤트 리스너 실행 
-            // 스코프가 더 이상 존재하지 않으면 구독 취소 가능 
+            // 인자로 받은 코루틴 범위 내에서 이벤트 리스너 실행 
+            // 스코프가 더 이상 존재하지 않으면 구독 취소
             .launchIn(scope)
     }
 
@@ -387,7 +387,7 @@ fun main() = runBlocking {
     // eventBus로부터 이벤트를 수신하기 위한 이벤트 리스너 초기화 
     val eventListener = EventListener(eventBus, this)
 
-    // 별개의 코루틴에서 eventBus를 통해 이벤트 전달 
+    // 분리된 코루틴에서 eventBus를 통해 이벤트 전달 
     launch(Dispatchers.Default) {
         delay(1000)
         eventBus.sendEvent(Event.EventA)
@@ -399,7 +399,7 @@ fun main() = runBlocking {
         eventBus.sendEvent(Event.EventC(42))
     }
 
-    // 리스너가 이벤트 처리할 수 있도록 메인 함수의 코루틴 스코프 유지 
+    // 리스너가 이벤트 처리할 수 있도록 메인 함수의 코루틴 지연 
     delay(5000)
 }
 ```
