@@ -32,29 +32,29 @@
 - 프로세스는 각각 **독립된 메모리 영역**을 갖고 있기 때문에 1번 프로세스에서 2번 프로세스로 실행 환경이 변경되면 **힙 영역, 스택 영역 모두 교체**되어야 한다.
 - 따라서 프로세스 간의 **컨텍스트 스위칭 비용이 제일 크다.**
 
-![image](https://github.com/leeeha/Android-TIL/assets/68090939/205e0290-508f-45fe-90c0-feda85b7cffa)
+<img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/205e0290-508f-45fe-90c0-feda85b7cffa"/>
 
-![image](https://github.com/leeeha/Android-TIL/assets/68090939/91fbb3bc-faec-4380-98bc-940e7e1172c7)
+<img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/91fbb3bc-faec-4380-98bc-940e7e1172c7"/>
 
 ## 스레드 Context Switching
 
 - 스레드는 **독립적인 스택 영역**을 갖고 있지만, **힙 영역을 공유**하기 때문에 실행 환경이 변경되면 **스택 영역만 교체**하면 된다.
 - 따라서 **프로세스보다는 컨텍스트 스위칭 비용이 적게 든다.**
 
-![image](https://github.com/leeeha/Android-TIL/assets/68090939/752c82db-f269-400c-b47a-bab5d9b89845)
+<img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/752c82db-f269-400c-b47a-bab5d9b89845"/>
 
-![image](https://github.com/leeeha/Android-TIL/assets/68090939/85b59dbc-1eaa-4d7b-96b6-ac15fa8cbd7b)
+<img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/85b59dbc-1eaa-4d7b-96b6-ac15fa8cbd7b"/>
 
 ## 코루틴 Context Switching
 
 - 코루틴은 1번 코루틴과 2번 코루틴이 동일한 스레드에서 실행될 수 있다.
 - 따라서 **동일한 스레드에서 코루틴이 실행되면, 메모리 전부를 공유**하므로 **스레드보다도 컨텍스트 스위칭 비용이 적게 든다.**
 
-![image](https://github.com/leeeha/Android-TIL/assets/68090939/c34b3cbb-ee74-45f3-9b20-f9da4ac2a6a3)
+<img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/c34b3cbb-ee74-45f3-9b20-f9da4ac2a6a3"/>
 
-![image](https://github.com/leeeha/Android-TIL/assets/68090939/213f3e7c-fd4e-415a-8219-2410e5b182dc)
+<img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/213f3e7c-fd4e-415a-8219-2410e5b182dc"/>
 
-![image](https://github.com/leeeha/Android-TIL/assets/68090939/885fa3ff-e92d-49c7-994d-1327719717be)
+<img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/885fa3ff-e92d-49c7-994d-1327719717be"/>
 
 또한, 스레드는 동시성을 확보하기 위해 여러 개의 스레드가 필요하다. 반면에, 코루틴은 1번 코루틴과 2번 코루틴이 하나의 스레드에서 번갈아 실행될 수 있기 때문에 **단 하나의 스레드만으로도 동시성을 확보**할 수 있다.
 
