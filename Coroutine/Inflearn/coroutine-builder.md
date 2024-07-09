@@ -151,6 +151,14 @@ job1 객체에서 `join()` 함수를 실행시키면, 해당 **코루틴이 끝�
 `async`는 `launch`와 거의 유사한데 딱 한가지 다른 점이 있다. 주어진 함수의 실행 결과를 반환할 수 없는 launch와 달리, async는 **주어진 함수의 실행 결과를 반환**할 수 있다. 
 
 ```kotlin
+fun <T> CoroutineScope.async(
+    context: CoroutineContext = EmptyCoroutineContext, 
+    start: CoroutineStart = CoroutineStart.DEFAULT, 
+    block: suspend CoroutineScope.() -> T
+): Deferred<T>
+```
+
+```kotlin
 fun main(): Unit = runBlocking {
 	val job = async {
 		3 + 5 
