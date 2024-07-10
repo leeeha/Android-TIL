@@ -1,0 +1,183 @@
+# CoroutineScope
+
+이전 글에서 CoroutineScope를 이미 활용한 적이 있다. 바로 **루트 코루틴을 만들기 위해 CoroutineScope을 이용해 새로운 영역을 만들고** launch로 코루틴을 생성했다. 
+
+```kotlin
+fun main(): Unit = runBlocking {
+	val job1 = CoroutineScope(Dispatchers.Default).launch {
+		delay(1_000L)
+		printWithThread("Job 1")
+	}
+}
+```
+
+사실 우리가 사용했던 **launch, async와 같은 코루틴 빌더는 CoroutineScope의 확장함수**이다. 즉, launch, async를 사용하려면 CoroutineScope가 필요했던 것이다.
+
+```kotlin
+public fun CoroutineScope.launch(
+    context: CoroutineContext = EmptyCoroutineContext,
+    start: CoroutineStart = CoroutineStart.DEFAULT,
+    block: suspend CoroutineScope.() -> Unit
+): Job
+```
+
+```kotlin
+public fun <T> CoroutineScope.async(
+    context: CoroutineContext = EmptyCoroutineContext,
+    start: CoroutineStart = CoroutineStart.DEFAULT,
+    block: suspend CoroutineScope.() -> T
+): Deferred<T>
+```
+
+따라서 지금까지 사실은 runBlocking이 일반 세계와 코루틴 세계를 이어주며, 코루틴 스코프를 제공해주고 있었기 때문에, runBlocking 안에서 launch, async를 사용할 수 있었던 것이다. 
+
+만약 우리가 직접 코루틴 스코프를 만든다면 runBlocking이 굳이 필요하지 않다. 
+
+main 함수를 일반 함수로 만들어 코루틴이 끝날 때까지 main 스레드를 대기시킬 수도 있고
+
+```kotlin
+fun main() {
+	val job = CoroutineScope(Dispatchers.Default).launch {
+		delay(1_000L)
+		printWithThread("Job 1")
+	}
+	
+	Thread.sleep(1_500L) // job1 종료까지 대기 
+}
+```
+
+ main 함수 자체를 suspend로 만들어 join() 함수로 코루틴 종료까지 대기할 수도 있다. 
+
+```kotlin
+suspend fun main() {
+	val job = CoroutineScope(Dispatchers.Default).launch {
+		delay(1_000L)
+		printWithThread("Job 1")
+	}
+	
+	job.join()
+}
+```
+
+# CoroutineContext
+
+이 CoroutineScope의 주요한 역할은 **CoroutineContext라는 데이터를 보관하는 것**이다. 실제 CoroutineScope 인터페이스 역시 매우 단순하다. 
+
+```kotlin
+public interface CoroutineScope {
+  public val coroutineContext: CoroutineContext
+}
+```
+
+**CoroutineContext는 코루틴과 관련된 여러 데이터를 가지고 있다.** 현재 코루틴의 이름, CoroutineExceptionHandler, 코루틴 그 자체 (Job), CoroutineDispatcher 등의 데이터를 예로 들 수 있다. 
+
+Dispatcher는 **코루틴이 어떤 스레드에 배정될지 관리하는 역할**을 한다. Dispatcher의 종류에 대해서는 잠시 후 다시 살펴보자. 
+
+이제까지의 내용을 요약하면 다음과 같다. 
+
+- **CoroutineScope: 코루틴이 탄생할 수 있는 영역**
+- **CoroutineContext: 코루틴과 관련된 데이터를 보관하고 있음.**
+
+# 구조적 동시성의 기반
+
+우리가 부모, 자식 코루틴이라고 불렀던 것도 한 영역 안에서 코루틴이 생기는 것을 의미하는데 그림과 함께 이해해보자. 
+
+<img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/663e6696-dca8-4f9e-9e75-992581f6ae94"/>
+
+위의 그림처럼 최초의 한 영역에 부모 코루틴이 있다고 가정하자. 
+
+이때 CoroutineContext에는 이름, Dispatchers.Default, 부모 코루틴 그 자체가 들어있다. 
+
+이 상황에서 부모 코루틴에서 자식 코루틴을 만들면 다음과 같을 것이다. 
+
+<img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/65897b39-e35c-4cf9-8e43-fc9b3d3dd504"/>
+
+**자식 코루틴은 부모 코루틴과 같은 영역에서 생성되고, 부모 코루틴의 Context를 복사해 적절히 내용을 덮어씌운 새로운 Context를 만든다.** 이 과정에서 부모, 자식 관계도 설정해준다. 
+
+이 원리가 바로 이전 시간에 살펴봤던 구조적 동시성을 작동시킬 수 있는 기반이 되는 것이다. 
+
+# 클래스 내부에서 독립적인 CoroutineScope 관리
+
+한 영역에 있는 코루틴들은 영역 자체를 cancel() 시킴으로써 모든 코루틴을 종료시킬 수 있다. 
+
+예를 들어, 다음 코드처럼 **클래스 내부에서 독립적인 CoroutineScope를 관리**한다면, **해당 클래스에서 사용하던 코루틴을 한번에 종료**시킬 수 있다. 
+
+```kotlin
+class AsyncLogic {
+	private val scope = CoroutineScope(Dispatchers.Default)
+	
+	fun doSomething() {
+		scope.launch {
+			// 여기서 어떤 작업을 하고 있다.
+		}
+	}
+	
+	fun destroy() {
+		scope.cancel()
+	}
+}
+```
+
+AsyncLogic 클래스의 인스턴스를 만들고, doSomething() 함수를 호출해 비동기 로직을 처리하다가 더 이상 필요가 없어지면, destroy() 함수를 호출해 모든 코루틴을 정리할 수 있다. 
+
+```kotlin
+val asyncLogic = AsyncLogic()
+asyncLogic.doSomething()
+
+asyncLogic.destroy() // 필요 없어지면 모두 정리
+```
+
+# CoroutineContext 내부 구조
+
+CoroutineContext는 **Map과 Set을 합쳐놓은 자료구조**와 같다. CoroutineContext에 저장되는 데이터는 key-value로 이루어져 있고, Set과 비슷하게 동일한 key를 가진 데이터는 하나만 존재할 수 있다. 
+
+이러한 **key-value 하나를 Element**라 부르고, + 기호를 이용해 각 Element를 합치거나 Context에 Element를 추가할 수도 있다. 
+
+```kotlin
+// + 기호를 이용한 Element 합성 
+CoroutineName("나만의 코루틴") + SupervisorJob() 
+
+// Context에 Element 추가 
+coroutineContext + CoroutineName("나만의 코루틴")
+```
+
+만약 Context에서 Element를 제거하고 싶다면, minusKey 함수를 이용해 제거할 수도 있다. 
+
+```kotlin
+coroutineContext.minusKey(CoroutineName.key)
+```
+
+# Dispatcher
+
+마지막으로 Context에 들어갈 수 있는 Dispatcher에 대해 더 알아보자.
+
+코루틴은 스레드에 배정되어 실행될 수 있으며, 중단되었다가 다른 스레드에 배정될 수도 있다. 
+
+이렇게 **코루틴을 스레드에 배정하는 역할을 Dispatcher가 수행**한다. 
+
+Dispatcher의 대표적인 종류는 다음과 같다. 
+
+- `Dispatchers.Default`
+    - 가장 기본적인 디스패처
+    - CPU 자원을 많이 사용할 때 권장되며, 별다른 설정이 없다면 기본으로 사용됨.
+- `Dispatchers.IO`
+    - 입출력 작업에 최적화 된 디스패처
+- `Dispatchers.Main`
+    - 보통 UI 컴포넌트를 조작하기 위해 사용되는 디스패처
+    - 특정 의존성을 갖고 있어야 정상적으로 활용 가능 (ex. 안드로이드)
+- `asCoroutineDispatcher()`
+    - Java의 스레드 풀인 ExecutorService를 디스패처로 변환하는 확장함수
+
+```kotlin
+fun main() {
+    val threadPool = Executors.newSingleThreadExecutor()
+    CoroutineScope(threadPool.asCoroutineDispatcher()).launch { 
+        printWithThread("새로운 코루틴")
+    }
+}
+```
+
+- 하나의 스레드를 갖는 스레드 풀을 만든다. (ExecutorService 타입)
+- CoroutineScope로 새로운 영역을 만들 때, 스레드 풀을 디스패처로 변환하여 적용한 다음 launch 블록 안에서 새로운 코루틴을 만든다.
+- 그러면 **해당 코루틴은 우리가 만든 스레드 풀에 배정하여 실행**시킬 수 있다.
+- 이 방법을 이용하면 손쉽게 스레드 풀을 만들어서 여러 코루틴을 해당 스레드 풀에서 돌릴 수 있게 된다.
