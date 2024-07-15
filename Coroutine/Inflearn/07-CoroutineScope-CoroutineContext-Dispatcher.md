@@ -165,6 +165,10 @@ Dispatcher의 대표적인 종류는 다음과 같다.
 - `Dispatchers.Main`
     - 보통 UI 컴포넌트를 조작하기 위해 사용되는 디스패처
     - 특정 의존성을 갖고 있어야 정상적으로 활용 가능 (ex. 안드로이드)
+- `Dispatchers.Unconfined`
+  - Unconfined: 제한 없음. 
+  - 자신을 호출한 스레드에서 실행되다가, 중단점 이후에는 해당 suspend 함수가 호출된 스레드에서 재개됨.
+  - CPU 시간을 잡아먹지 않거나, 특정 스레드에 국한된 공유 데이터(예: UI)를 갱신하지 않는 코루틴에 적합함. 
 - `asCoroutineDispatcher()`
     - Java의 스레드 풀인 ExecutorService를 디스패처로 변환하는 확장함수
 
