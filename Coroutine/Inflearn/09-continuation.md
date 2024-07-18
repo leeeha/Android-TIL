@@ -1,4 +1,4 @@
-코루틴이 어떻게 특정 지점에서 중단도 하고 재개도 하는지 그 내부적인 동작 원리를 예제와 함께 알아보자! 
+코루틴이 **어떻게 특정 지점에서 중단도 하고 재개도 하는지 그 내부적인 동작 원리**를 예제와 함께 알아보자! 
 
 아래의 UserService 클래스에서 findUser라는 suspend 함수로 유저 정보를 가져오는데, 그 안에서 findProfile, findImage라는 또 다른 2개의 suspend 함수도 호출하고 있다. 
 
@@ -49,24 +49,28 @@ class UserImageRepository {
 
 suspend 함수인 findUser가 내부적으로 어떻게 동작하는지 알아보자! 
 
-우선 findUser 함수에서 중단될 수 있는 지점이 어디인지 확인해보자. 바로 suspend 함수를 호출하는 두 곳이 중단될 수 있는 지점이다. 이 지점을 경계로 메소드를 나누면 findUser 함수는 총 3단계로 이루어진다. 
+우선 findUser 함수에서 중단될 수 있는 지점이 어디인지 확인해보자. 바로 **suspend 함수를 호출하는 두 곳이 중단될 수 있는 지점**이다. 
+
+이 지점을 경계로 메소드를 나누면 findUser 함수는 총 3단계로 이루어진다. 
 
 ```kotlin
 suspend fun findUser(userId: Long): UserDto {
-		// 0단계 - 초기 시작 
+    // 0단계 - 초기 시작 
     println("findProfile")
     val profile = userProfileRepository.findProfile(userId)
 
-		// 1단계 - 1차 중단 후 재시작 
+    // 1단계 - 1차 중단 후 재시작 
     println("findImage")
     val image = userImageRepository.findImage(profile)
 
-		// 2단계 - 2차 중단 후 재시작 
+    // 2단계 - 2차 중단 후 재시작 
     return UserDto(profile, image)
 }
 ```
 
-이제 각 단계를 라벨로 표시해보자. 이를 위해 라벨 정보를 갖고 있는 객체 하나를 만들어야 한다. `Continuation`이라는 인터페이스를 만들고, 이를 구현한 익명 클래스의 객체가 라벨을 갖고 있도록 구현해보자. 
+이제 **각 단계를 라벨로 표시**해보자. 이를 위해 **라벨 정보를 갖고 있는 객체** 하나를 만들어야 한다. 
+
+`Continuation`이라는 인터페이스를 만들고, 이를 구현한 익명 클래스의 객체가 라벨을 갖고 있도록 구현해보자. 
 
 ```kotlin
 interface Continuation {
@@ -74,24 +78,24 @@ interface Continuation {
 }
 
 suspend fun findUser(userId: Long): UserDto {
-		// state machine의 약자 (라벨을 기준으로 상태를 관리하므로)
-		val sm = object: Continuation {
-			var label = 0 // 익명 클래스 객체가 라벨을 갖게 만든다. 
-		}
-		
-		when(sm.label) {
-			0 -> {
-		    println("findProfile")
-		    val profile = userProfileRepository.findProfile(userId)
-			}
-			
-			1 -> {
-		    println("findImage")
-		    val image = userImageRepository.findImage(profile)
-			}
-			
-			2 -> return UserDto(profile, image)
-		}
+    // state machine의 약자 (라벨을 기준으로 상태를 관리하므로)
+    val sm = object: Continuation {
+        var label = 0 // 익명 클래스 객체가 라벨을 갖게 만든다. 
+    }
+    
+    when(sm.label) {
+        0 -> {
+            println("findProfile")
+            val profile = userProfileRepository.findProfile(userId)
+        }
+        
+        1 -> {
+            println("findImage")
+            val image = userImageRepository.findImage(profile)
+        }
+        
+        2 -> return UserDto(profile, image)
+    }
 }
 ```
 
@@ -218,7 +222,9 @@ class UserImageRepository {
 }
 ```
 
-이제 Continuation에 `resumeWith(data: Any?)`라는 함수를 하나 만들고, findUser에서 익명 클래스로 만든 sm 객체에서 `resumeWith` 함수를 오버라이드 한다. 오버라이드 된 resumeWith에서는 다시 한번 findUser를 호출할 것이다. (재귀 호출) 
+이제 Continuation에 `resumeWith(data: Any?)`라는 함수를 하나 만들고, findUser에서 익명 클래스로 만든 sm 객체에서 `resumeWith` 함수를 오버라이드 한다. 
+
+오버라이드 된 resumeWith에서는 다시 한번 findUser를 호출할 것이다. (재귀 호출)
 
 ```kotlin
 package org.example
@@ -290,7 +296,9 @@ class UserImageRepository {
 
 자 이제 findProfile, findImage에 넘겨준 Continuation 객체를 통해 `resumeWith` 함수를 호출하면, 다음 라벨 영역의 코드도 호출할 수 있게 된다! 
 
-그림으로 이 과정을 설명하면 다음과 같다. 핵심은 **suspend 함수들 간에 Continuation을 지속적으로 전달하면서 콜백으로 활용한다**는 것이다. 이를 **Continuation Passing Style (CPS)** 이라고 한다. 
+그림으로 이 과정을 설명하면 다음과 같다. 핵심은 **suspend 함수들 간에 Continuation을 지속적으로 전달하면서 콜백으로 활용한다**는 것이다. 
+
+이를 **Continuation Passing Style (CPS)** 이라고 한다.
 
 <img width="600" src="https://github.com/user-attachments/assets/aeb74883-5465-45fc-bf6a-4c585ffb4788"/>
 
@@ -304,7 +312,7 @@ class UserImageRepository {
 
 <img width="600" src="https://github.com/user-attachments/assets/298875ac-6f62-493b-aa23-ddcc0011265e"/>
 
-이렇게 동작하도록 구현하기 위해 findUser가 호출될 때마다 sm을 새로 만들지 않고, 들어온 Continuation 객체 타입에 따라 새로운 Continuation 객체를 만들도록 수정한다. 
+이렇게 동작하도록 구현하기 위해 findUser가 호출될 때마다 sm을 새로 만들지 않고, **들어온 Continuation 객체 타입에 따라 새로운 Continuation 객체를 만들도록 수정**한다. 
 
 또한, Continuation의 resumeWith 함수를 오버라이드 한 함수에서 라벨과 데이터를 넣어주도록 수정한다. 
 
@@ -398,7 +406,9 @@ class UserImageRepository {
 }
 ```
 
-그러면, 그림에서 살펴본 것처럼 **Continuation을 통해 최초 호출인지, 콜백 호출인지 구분**할 수 있게 된다. 그리고 **Continuation의 구현 클래스에서 라벨과 전달할 데이터 등을 관리**할 수 있게 된다. 
+그러면, 그림에서 살펴본 것처럼 **Continuation을 통해 최초 호출인지, 콜백 호출인지 구분**할 수 있게 된다. 
+
+그리고 **Continuation의 구현 클래스에서 라벨과 전달할 데이터 등을 관리**할 수 있게 된다. 
 
 실행 결과 
 
@@ -427,7 +437,7 @@ class UserService {
 }
 ```
 
-아래의 디컴파일 코드를 완전히 이해하긴 어렵지만, 큰 흐름은 Continuation 객체의 라벨을 확인하여 그 값에 따라 switch-case문을 돌리고 최종적으로 UserDto를 반환한다는 것이다. 
+아래의 디컴파일 코드를 완전히 이해하긴 어렵지만, 큰 흐름은 **Continuation 객체의 라벨을 확인하여 그 값에 따라 switch-case문을 돌리고 최종적으로 UserDto를 반환한다**는 것이다. 
 
 findUser 함수 안에서 사용되는 또 다른 suspend 함수인 findProfile, findImage도 비슷한 방식으로 동작한다. 
 
