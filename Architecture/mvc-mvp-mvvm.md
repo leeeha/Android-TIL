@@ -26,13 +26,13 @@
 
 - **모든 입력은 Controller로 전달된다.**
 - Controller는 입력에 해당하는 **Model을 업데이트** 한다.
-- Controller는 Model의 업데이트 결과에 따라 **View를 선택**한다.
-  -  **Controller와 View는 1:n 관계**
-- **Controller는 View를 선택만 할 뿐, 직접 업데이트 하지 않는다.**
-    - View는 Controller를 알지 못한다.
+- Controller는 Model의 업데이트 결과에 따라 **View를 선택**한다. (Controller와 View는 1:n 관계)
+- Controller는 View를 선택만 할 뿐, 직접 업데이트 하지 않는다. View는 Controller를 알지 못한다.
 - **그렇다면, View를 업데이트 하는 방법은?**
     - Model 스스로 자신의 변화를 View에게 알린다. (notify)
     - View가 주기적으로 Model을 가져와 업데이트한다. (polling)
+
+## 안드로이드에서는? 
 
 <img width="600" src="https://github.com/leeeha/Android-TIL/assets/68090939/4713ba4b-a3e5-4e5e-b698-8a337c0211e1"/>
 
@@ -42,35 +42,44 @@ MVC 구조를 안드로이드에 적용해보면 **Activity는 Controller를 맡
 
 MVC 패턴은 시간이 지나면서 다양하게 해석되었는데, 초기 MVC는 View와 Model이 연결되어 있지만, 이후에는 직접 연결되지 않는다. 
 
-**변화한 형태에서는 Controller가 View를 직접 다루게 된다.** 이 방식으로는 안드로이드에서도 MVC 패턴을 구현할 수 있다. 다만 이 형태가 MVC가 맞는지에 대한 논의도 많다고 한다. 
+**변화한 형태에서는 Controller가 View를 직접 다루게 된다.** 이 방식으로는 안드로이드에서도 MVC 패턴을 구현할 수 있다. (다만 이 형태가 MVC가 맞는지에 대한 논의도 많다고 한다.)
 
 <img width="900" src="https://github.com/leeeha/Android-TIL/assets/68090939/52d2ef26-a952-4578-82b2-2afd02287ec6"/>
 
 ## 예시 코드 
 
 ```kotlin
-class MovieActivity : AppCompatActivity() {
-    // ...
-
+class OrderActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_movie)
-        
-        /* something */
-    }
+        setContentView(R.layout.activity_order)
 
-    private fun initAdapter() {
-        adapter.setItemClickListener { movie ->
-          /* something */
+        // Model 초기화 
+        val americanoModel = Americano()
+        val totalPriceModel = TotalPrice()
+
+        // View 초기화 
+        val americanoDeleteButton = findViewById<Button>(R.id.americanoDeleteButton)
+        val americanoAddButton = findViewById<Button>(R.id.americanoAddButton)
+        val americanoCountText = findViewById<TextView>(R.id.americanoCountText)
+        val totalPriceText = findViewById<TextView>(R.id.totalPriceText)
+
+        // Controller로 들어온 사용자 입력에 따라 Model, View 갱신 
+        americanoDeleteButton.setOnClickListener {
+            americanoModel.delete()
+            americanoCountText.text = "${americanoModel.quantity}"
+
+            totalPriceModel.decreaseTotalPrice(americanoModel.price)
+            totalPriceText.text = "${totalPriceModel.totalPrice}"
         }
-    }
 
-    private fun onClickListener() {
-      /* something */
-    }
+        americanoAddButton.setOnClickListener {
+            americanoModel.add()
+            americanoCountText.text = "${americanoModel.quantity}"
 
-    private fun requestMovie(query: String) {
-      /* something */
+            totalPriceModel.increaseTotalPrice(americanoModel.price)
+            totalPriceText.text = "${totalPriceModel.totalPrice}"
+        }
     }
 }
 ```
@@ -95,8 +104,10 @@ class MovieActivity : AppCompatActivity() {
 - **모든 입력은 View로 전달된다.**
 - Presenter는 입력에 해당하는 **Model을 업데이트**한다.
 - Presenter는 Model 업데이트 결과를 기반으로 **View를 업데이트**한다.
-  - **View와 Presenter는 1:1 관계** 
+- **View와 Presenter는 1:1 관계** 
 - Presenter는 View와 Model의 인스턴스를 갖고, **Model과 View 사이의 중개자 역할**을 한다.
+
+## 안드로이드에서는? 
 
 <img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/82d58d81-ed65-405f-afd7-df17c2296d6d"/>
 
@@ -109,50 +120,77 @@ MVP 패턴에서는 Presenter가 M-V 사이에서 관리해주기 때문에 **M-
 ## 예시 코드 
 
 ```kotlin
-interface TestContract {
-    interface TestView {
-        fun message(msg: String)
-    }
-
-    interface TestPresenter {
-        fun onGreenButtonClick()
-        fun onBlueButtonClick()
-    }
+interface Presenter {
+    fun addAmericano()
+    fun deleteAmericano()
 }
 
-class Presenter(
-    private val view: TestContract.View
-) : TestContract.Presenter {
-    override fun onGreenButtonClick() {
-	      view.message("green click")
+class OrderPresenter(
+    private var view: OrderView,
+    private var menuModel: Beverage = Americano(),
+    private var totalModel: TotalPrice = TotalPrice()
+) : Presenter {
+    override fun deleteAmericano() {
+        menuModel.delete()
+        view.setAmericanoCounterText(menuModel.quantity)
+        updateTotalPriceSubtraction(menuModel.price)
     }
 
-    override fun onBlueButtonClick() {
-	      view.message("blue click")
+    override fun addAmericano() {
+        menuModel.add()
+        view.setAmericanoCounterText(menuModel.quantity)
+        updateTotalPriceAddition(menuModel.price)
+    }
+
+    private fun updateTotalPriceSubtraction(price: Int) {
+        totalModel.decreaseTotalPrice(price)
+        view.setTotalPriceText(totalModel.totalPrice)
+    }
+
+    private fun updateTotalPriceAddition(price: Int) {
+        totalModel.increaseTotalPrice(price)
+        view.setTotalPriceText(totalModel.totalPrice)
     }
 }
+```
 
-class MovieSearchActivity : AppCompatActivity(), TestContract.View {
-    private lateinit var presenter: TestContract.Presenter
+```kotlin
+interface OrderView {
+    fun setAmericanoCounterText(count: Int)
+    fun setTotalPriceText(price: Int)
+}
+
+class OrderActivity : AppCompatActivity(), OrderView {
+    private lateinit var americanoCountText: TextView
+    private lateinit var totalPriceText: TextView
+    private var present: OrderPresenter = OrderPresenter(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_order)
 
-        presenter = Presenter(this)
-    }
+        val americanoDeleteButton = findViewById<Button>(R.id.americanoDeleteButton)
+        val americanoAddButton = findViewById<Button>(R.id.americanoAddButton)
 
-    private fun onClickListener() {
-        btnGreen.setOnClickListener {
-            presenter.onGreenButtonClick()
+        americanoCountText = findViewById<TextView>(R.id.americanoCountText)
+        totalPriceText = findViewById<TextView>(R.id.totalPriceText)
+
+        // Presenter를 통해 Model, View 갱신 
+        americanoDeleteButton.setOnClickListener {
+            present.deleteAmericano()
         }
 
-        btnBlue.setOnClickListener {
-            presenter.onBlueButtonClick()
+        americanoAddButton.setOnClickListener {
+            present.addAmericano()
         }
     }
 
-    override fun message(msg: String) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+    override fun setAmericanoCounterText(count: Int) {
+        americanoCountText.text = "$count"
+    }
+
+    override fun setTotalPriceText(price: Int) {
+        totalPriceText.text = "$price"
     }
 }
 ```
@@ -171,21 +209,51 @@ class MovieSearchActivity : AppCompatActivity(), TestContract.View {
 >Model과 View 간의 의존성 뿐만 아니라 **Controller, View 사이의 의존성도 고려**하여 <br>
 >각 구성요소가 **독립적으로 작성되고 테스트** 될 수 있도록 설계된 아키텍처 패턴
 
-<img width="700" alt="스크린샷 2024-07-19 오후 4 21 29" src="https://github.com/user-attachments/assets/168640d1-d8bc-4de8-879e-c83e94c33d67">
+<img width="700" alt="스크린샷 2024-07-25 오후 10 17 09" src="https://github.com/user-attachments/assets/784675fa-11b1-43fd-ae96-886084cd35c5">
 
 - **모든 입력은 View로 전달**된다.
-- ViewModel은 입력에 해당하는 UI 로직을 처리하여 View에 데이터를 전달한다.
-- **ViewModel은 View를 직접 참조하지 않는다.**
-  - View와 ViewModel은 1:n 관계
-- **Model이 변경되면 해당 ViewModel을 이용하는 View가 자동으로 업데이트 된다.**
+- ViewModel은 입력에 해당하는 **Model을 업데이트**하고, View에게 상태 변화를 알린다. (단, View를 직접 참조 X)
+- **View는 자신이 사용할 ViewModel을 선택**하여, 업데이트 된 Model을 받는다. (ViewModel과 View는 1:n 관계)
+
+## 안드로이드에서는? 
 
 <img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/4ec520ed-3c11-4567-be4c-ab82c8dbb819"/>
 
-안드로이드에서는 옵저버 패턴, 데이터 바인딩 등을 통해 **ViewModel이 View를 직접 참조하지 않아도** View가 ViewModel의 상태값을 가져올 수 있다. 
+안드로이드에서는 옵저버 패턴, 데이터 바인딩 등을 통해 **ViewModel이 View를 직접 참조하지 않아도** View가 ViewModel의 상태 값을 가져올 수 있다. 
 
-즉, LiveData, Flow 등을 통해 ViewModel은 Model을 업데이트 하고, **View가 이 데이터를 구독하고 있다.** 
+즉, LiveData, Flow 등을 통해 **ViewModel은 Model을 업데이트** 하고, **View가 이 데이터를 구독하고 있다.**
 
 MVVM 패턴은 MVP와 마찬가지로 **M-V 사이의 의존성이 없고**, MVP처럼 **V-VM이 1:1 관계가 아닌 독립적인 관계**이기 때문에 이 둘 사이의 의존성도 없다. 
+
+## MVVM ViewModel vs AAC ViewModel
+
+### MVVM ViewModel
+
+MVVM 패턴에서의 ViewModel은 **사용자 입력에 따라 Model의 상태가 변하면, View에게 이를 알리는 역할**을 한다.
+
+View는 ViewModel의 상태 변화를 관찰하고 있다. 옵저버 패턴을 사용하기 때문에 **View에서는 ViewModel을 알고 있지만, ViewModel은 View를 알지 못한다.**
+
+일반적으로 **ViewModel과 View는 1:n의 관계**이며, **View는 자신이 이용할 ViewModel을 선택**하여 상태 변화 알림을 받게 된다. 
+
+ViewModel은 View가 쉽게 사용할 수 있도록 Model의 데이터를 가공하여 View에게 제공한다. (직접 View를 참조하지는 않는다.)
+
+한마디로 요약하자면 **ViewModel이란 View와 Model 사이에서 데이터를 관리하고 바인딩해주는 요소**이다.
+
+### AAC ViewModel
+
+AAC에서의 ViewModel은 Android 컴포넌트의 생명 주기를 고려하여 UI 관련 데이터를 저장하고 관리하도록 설계되었다. AAC ViewModel을 사용하면 기존의 Activity가 생명 주기 때문에 데이터 관리 측면에서 겪던 어려움들을 간단하게 처리할 수 있다.
+
+![image](https://github.com/user-attachments/assets/aec5fe28-5a8f-4142-a2af-b8e64c44ddaf)
+
+위의 그림처럼 ViewModel은 Activity보다 생명 주기가 길기 때문에, **화면 회전과 같은 Configuration Change 상황에서 Activity가 파괴되었다가 재생성되어도 기존 데이터를 보존**할 수 있다. 
+
+### 요약 
+
+둘은 서로 다른 개념이지만, AAC의 ViewModel을 이용하여 MVVM 패턴의 ViewModel을 구현할 수 있다. 
+
+MVVM 패턴에서 ViewModel의 역할은 View에 필요한 데이터를 관리하고 바인딩 해주는 것이다. AAC의 ViewModel을 이 개념대로 구현해주면 된다.
+
+즉, ViewModel 내에서 LiveData, Flow 등을 사용하여 View에 데이터를 바인딩한다면 MVVM 패턴의 ViewModel로써 사용 가능한 것이다. 
 
 ## 예시 코드 
 
@@ -279,7 +347,7 @@ class RecommendFragment : BindingFragment<FragmentRecommendBinding>(R.layout.fra
 
 - Model, View 사이의 의존성이 없음.
 - ViewModel이 View를 모르기 때문에 의존성이 분리되고, View 교체가 쉬워짐.
-- ViewModel과 View가 1:1 관계가 아니므로, ViewModel을 잘 나누면 여러 뷰에서 재활용 가능 (단, 최근 안드로이드 가이드에 따르면 뷰 단위의 뷰모델 재활용은 권장되지 않으므로 주의 필요)
+- ViewModel과 View가 1:1 관계가 아니므로, ViewModel을 잘 나누면 여러 뷰에서 재활용 가능 (단, 뷰 단위의 뷰모델 재활용은 권장되지 않으므로 주의 필요)
 
 ### 단점
 
