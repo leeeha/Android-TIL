@@ -130,8 +130,8 @@ public interface StateFlow<out T> : SharedFlow<T> {
 
 ### [SharedFlow](https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-core/common/src/flow/SharedFlow.kt)
 
-- **replayCache** 크기를 정의하여 **새로운 구독자에게 반복적으로 전달할 값의 개수**를 설정할 수 있다.
-- **구독자들을 Slot이라는 형태로 관리**하여 값이 전달될 시 **활성화 된 모든 구독자에게 새로운 값이 전달**되도록 한다.
+- **replayCache** 크기를 정의하여 새로운 구독자에게 전달할 **이전에 방출된 값의 개수**를 설정할 수 있다.
+- 구독자들을 Slot이라는 형태로 관리하여, 값이 전달될 때 **활성화 된 모든 구독자에게 새로운 값이 전달**되게 한다.
 
 ### [StateFlow](https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-core/common/src/flow/StateFlow.kt)
 
