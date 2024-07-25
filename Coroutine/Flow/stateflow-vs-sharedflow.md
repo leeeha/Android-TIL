@@ -56,7 +56,7 @@ Collector 2 received: 2
 
 - StateFlow는 **상태를 나타내는 Hot Stream**으로, **한 번에 하나의 값을 보유**한다.
 - 새로운 값이 방출되면 가장 최근 값이 유지되고 즉시 새로운 수신자로 방출되는 [conflated flow](https://kotlinworld.com/254)이기도 하다.
-- 상태에 대한 단일 소스를 유지하고 **모든 수신자를 최신 상태로 자동 업데이트** 해야 할 때 유용하다.
+- 상태에 대한 SSOT(Single Souce Of Truth)를 유지하고 **모든 수신자를 최신 상태로 자동 업데이트** 해야 할 때 유용하다.
 - 항상 **초기값**을 가지며, **가장 최근에 방출된 값만 저장**한다.
 
 <img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/08b2a1d9-8370-47f9-b1b4-ff190b9da9e6"/>
@@ -142,8 +142,8 @@ public interface StateFlow<out T> : SharedFlow<T> {
 
 ### 올바른 flow 선택
 
-- 여러 수집기에 값을 브로드캐스트해야 하거나 동일한 데이터 스트림에 여러 명의 구독자를 보유하려는 경우 SharedFlow 사용
-- 상태에 대한 하나의 원천을 유지 및 공유하고 모든 수신자를 최신 상태로 자동 업데이트 해야 하는 경우 StateFlow 사용
+- SharedFlow: 여러 수집기에 값을 브로드캐스트 하거나, 동일한 데이터 스트림에 여러 명의 구독자를 보유하려는 경우
+- StateFlow: 상태에 대한 SSOT를 유지 및 공유하고, 모든 수신자를 최신 상태로 자동 업데이트 해야 하는 경우
 
 ### mutable flow 캡슐화
 
@@ -165,7 +165,7 @@ class ExampleViewModel {
 
 ### 적절한 리소스 관리
 
-SharedFlow, StateFlow를 사용할 때는 더 이상 필요하지 않은 코루틴이나 수집기를 취소하여 리소스를 적절히 관리해야 한다. 
+SharedFlow, StateFlow를 사용할 때는 **더 이상 필요하지 않은 코루틴이나 수집기를 취소**하여 리소스를 적절히 관리해야 한다. 
 
 ```kotlin
 val scope = CoroutineScope(Dispatchers.Main)
@@ -184,7 +184,7 @@ job.cancel()
 
 ### buffer, replay 용량 설정
 
-SharedFlow의 경우 buffer 용량과 replay 용량을 설정할 수 있다. [backpressure](https://doublem.org/stream-backpressure-basic/) 문제를 방지하기 위해 적절한 버퍼 용량을 선택하고, 사용 사례의 요구사항에 따라 replay 용량을 설정하자. 
+SharedFlow의 경우 buffer 용량과 replay 용량을 설정할 수 있다. [backpressure](https://doublem.org/stream-backpressure-basic/) 문제를 방지하기 위해 적절한 버퍼 용량을 선택하고, 사용 사례의 요구사항에 따라 replay 용량을 설정하자.
 
 ```kotlin
 val sharedFlow = MutableSharedFlow<Int>(
@@ -200,7 +200,7 @@ val sharedFlow = MutableSharedFlow<Int>(
 
 ### combine, map, filter 등의 연산자 사용
 
-Kotlin flow 연산자를 활용하여 필요에 따라 데이터를 변형(transform), 조합(combine), 필터링(filter) 해보자. 이를 통해 보다 표현력이 풍부하고 효율적인 코드를 작성할 수 있다.
+Kotlin flow 연산자를 활용하여 필요에 따라 데이터를 변형(transform), 조합(combine), 필터링(filter) 해보자. 이를 통해 보다 **표현력이 풍부하고 효율적인 코드를 작성**할 수 있다.
 
 ```kotlin
 val flow1 = MutableStateFlow(1)
@@ -220,7 +220,7 @@ launch {
 
 ### 적절한 예외 처리
 
-Flow를 사용할 때는 예외를 올바르게 처리해야 한다. 
+Flow를 사용할 때는 **예외를 올바르게 처리**해야 한다. 
 
 Flow 파이프라인 내에서 예외를 처리하려면 `catch` 연산자를 사용하고, cleanup 작업을 수행하거나 flow completion에 반응하려면 `onCompletion` 연산자를 사용하자. 
 
