@@ -104,14 +104,36 @@ Collector 2 received: 2
 
 # 인터페이스 계층 구조
 
-**Flow ← SharedFlow ← StateFlow**
+### Flow ← SharedFlow ← StateFlow
 
-**SharedFlow**
+```kotlin
+public interface Flow<out T> {
+    public suspend fun collect(collector: FlowCollector<T>)
+}
+```
+
+```kotlin
+public interface SharedFlow<out T> : Flow<T> {
+    // A snapshot of the replay cache.
+    public val replayCache: List<T>
+
+    override suspend fun collect(collector: FlowCollector<T>): Nothing
+}
+```
+
+```kotlin
+public interface StateFlow<out T> : SharedFlow<T> {
+    // The current value of this state flow.
+    public val value: T
+}
+```
+
+### [SharedFlow](https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-core/common/src/flow/SharedFlow.kt)
 
 - replayCache 크기를 정의하여 **새로운 구독자에게 반복적으로 전달할 값의 개수를 설정**할 수 있다.
 - 구독자들을 Slot이라는 형태로 관리하여 값이 전달될 시 **활성화 된 모든 구독자에게 새로운 값이 전달**되도록 한다.
 
-**StateFlow**
+### [StateFlow](https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-core/common/src/flow/StateFlow.kt)
 
 - SharedFlow를 상속하는 StateFlow는 추가로 **기본값을 가지고 있으며**
 - replaceCache는 **가장 최근의 값 하나**를 갖는 리스트로 재정의 하고 있다.
