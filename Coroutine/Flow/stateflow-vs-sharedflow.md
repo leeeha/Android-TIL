@@ -56,7 +56,7 @@ Collector 2 received: 2
 
 - StateFlow는 **상태를 나타내는 Hot Stream**으로, **한 번에 하나의 값을 보유**한다.
 - 새로운 값이 방출되면 가장 최근 값이 유지되고 즉시 새로운 수신자로 방출되는 [conflated flow](https://kotlinworld.com/254)이기도 하다.
-- 상태에 대한 SSOT(Single Souce Of Truth)를 유지하고 **모든 수신자를 최신 상태로 자동 업데이트** 해야 할 때 유용하다.
+- 상태에 대한 SSOT(Single Source Of Truth)를 유지하고 **모든 수신자를 최신 상태로 자동 업데이트** 해야 할 때 유용하다.
 - 항상 **초기값**을 가지며, **가장 최근에 방출된 값만 저장**한다.
 
 <img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/08b2a1d9-8370-47f9-b1b4-ff190b9da9e6"/>
