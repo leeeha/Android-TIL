@@ -1,3 +1,7 @@
+>📌 현재 폴더에 작성한 모든 내용의 출처는 아래 인프런 강의임을 밝혀둡니다. 
+>
+>[2시간으로 끝내는 코루틴, 최태현 ](https://www.inflearn.com/course/2%EC%8B%9C%EA%B0%84%EC%9C%BC%EB%A1%9C-%EB%81%9D%EB%82%B4%EB%8A%94-%EC%BD%94%EB%A3%A8%ED%8B%B4)
+
 # CoroutineScope
 
 이전 글에서 CoroutineScope를 이미 활용한 적이 있다. 바로 **루트 코루틴을 만들기 위해 CoroutineScope을 이용해 새로운 영역을 만들고** launch로 코루틴을 생성했다. 
