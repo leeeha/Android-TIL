@@ -119,7 +119,7 @@ yield 함수를 호출하지 않더라도 동일한 결과가 나온다.
 
 **루틴은 한 번 시작되면 종료될 때까지 멈추지 않지만, 코루틴은 상황에 따라 잠시 '중단'되었다가 다시 '시작'되기도 한다.** 따라서 완전히 종료되기 전까지는 newRoutine 함수 안에 있는 num1, num2 변수가 메모리에서 제거되지 않는다.
 
-IntelliJ의 VM optines에 `-Dkotlinx.coroutines.debug` 를 설정하면 어떤 코루틴에서 출력이 일어났는지 확인할 수도 있다.
+IntelliJ의 VM options에 `-Dkotlinx.coroutines.debug` 를 설정하면 어떤 코루틴에서 출력이 일어났는지 확인할 수도 있다.
 
 <img width="900" src="https://github.com/leeeha/Android-TIL/assets/68090939/c0b5b577-40a5-43e3-8108-d6553f9b8224"/>
 
