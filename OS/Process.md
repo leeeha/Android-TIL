@@ -61,13 +61,14 @@
 
 운영체제는 PCB라는 구조체를 만들어서 **프로세스와 관련된 모든 정보를 저장**한다.
 
+- 프로세스 식별 번호 (Process ID, PID)
 - 프로세스 상태 (New, Running, Waiting, Ready, Terminated)
 - 프로그램 카운터 (다음에 실행될 명령어의 주소를 저장하고 있는 레지스터)
 - CPU 레지스터 
 - CPU 스케줄링 정보 
 - 메모리 관리 정보 
-- 유저 계정 정보 
 - 입출력 상태 정보 
+- 계정 정보 
 
 <img width="500" src="https://github.com/user-attachments/assets/85db5492-42a3-4d4a-a231-50af8fb90944"/>
 
