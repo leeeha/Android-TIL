@@ -196,9 +196,10 @@ ex3) 프로세스가 wait(), signal() 중에 하나를 호출하지 않거나, �
 
 ## 모니터의 구성
 
-<img height="400" src="https://velog.velcdn.com/images/jxlhe46/post/21a93daf-e002-4e99-a759-5653cf0e7212/image.png"/> <img height="400" src="https://velog.velcdn.com/images/jxlhe46/post/fdf99a53-9b47-49b5-96ca-ec1c11fe9f3d/image.png"/>
+모니터는 클래스, 구조체와 유사한 개념이며, 아래 그림처럼 **공유 데이터, 공유 데이터를 이용한 연산들, 초기화 코드**로 이루어져 있다. 
 
-모니터는 클래스, 구조체와 유사한 개념이며, 위의 그림처럼 **공유 데이터, 공유 데이터를 이용한 연산들, 초기화 코드**로 이루어져 있다. 
+<img height="300" src="https://velog.velcdn.com/images/jxlhe46/post/21a93daf-e002-4e99-a759-5653cf0e7212/image.png"/> <img height="300" src="https://velog.velcdn.com/images/jxlhe46/post/fdf99a53-9b47-49b5-96ca-ec1c11fe9f3d/image.png"/>
+
 
 ## 모니터의 특징
 
