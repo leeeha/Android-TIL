@@ -32,14 +32,14 @@ CPU 스케줄러는 **Ready 상태의 프로세스 중에 어떤 프로세스를
 ## 선점형 vs 비선점형 
 
 - 선점형 스케줄링 : 스케줄러가 프로세스를 선점할 수 있다. (스케줄러가 프로세스를 강제로 쫓아낼 수 있다.)
-- 비선점형 스케줄링 : 프로세스가 종료되거나 Waiting 상태로 전환되어 자발적으로 나오기 전까지는 계속 CPU를 선점하고 있다. (스케줄러가 프로세스를 강제로 쫓아내지 못한다.)
+- 비선점형 스케줄링 : 프로세스가 종료되거나 Waiting 상태로 전환되어 자발적으로 나오기 전까지는 계속 CPU를 선점하고 있다. (스케줄러가 프로세스를 강제로 쫓아낼 수 없다.)
 
-1. running → waiting
-2. running → ready
-3. waiting → ready
-4. terminated
+<img width="450" src="https://github.com/user-attachments/assets/0f5c0430-d0d6-43f1-b1c4-58b8f153c864"/>
 
-1, 4번의 경우, 자발적으로 프로세스가 CPU에서 나오기 때문에 비선점형이다. 2, 3번의 경우, 스케줄러가 프로세스를 강제로 쫓아낼 수도 있으므로 선점형 또는 비선점형이다.
+1. running → waiting (비선점형)
+2. running → ready (선점형)
+3. waiting → ready (선점형)
+4. terminated (비선점형)
 
 ## 디스패처
 
