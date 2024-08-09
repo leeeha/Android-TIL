@@ -69,8 +69,6 @@ fun main(): Unit = runBlocking {
         var i = 1
         var nextPrintTime = System.currentTimeMillis()
         while(i <= 5){
-			// nextPrintTime <= 현재 시간 -> print 함수 실행
-			// nextPrintTime > 현재 시간 -> 현재 시간이 더 커질 때까지 while문 반복 (delay 효과)
             if(nextPrintTime <= System.currentTimeMillis()) {
                 printWithThread("${i++}번째 출력!")
                 nextPrintTime += 1_000L
@@ -90,6 +88,11 @@ fun main(): Unit = runBlocking {
 // [main @coroutine#2] 5번째 출력!
 ```
 
+- nextPrintTime <= 현재 시간 → print 함수 실행, nextPrintTime += 1_000L
+- nextPrintTime > 현재 시간 → 1초가 지나서 if문을 만족시킬 때까지 while문 반복 (1초 delay)
+
+while문 안의 if문이 위와 같이 동작하기 때문에 delay 함수와 동일한 효과를 볼 수 있다. 
+
 <img width="800" src="https://github.com/leeeha/Android-TIL/assets/68090939/a13c71b0-e69e-44ef-b57f-8ac55ee29b95"/>
 
 분명 job.cancel() 함수로 코루틴을 취소했지만, launch 블록에 의해 만들어진 코루틴은 1초 간격으로 5개의 문자열을 모두 출력할 때까지 취소되지 않는다. 
@@ -105,7 +108,7 @@ fun main(): Unit = runBlocking {
     - 이 프로퍼티는 **현재 코루틴이 활성화 되어 있는지, 아니면 취소 신호를 받았는지 구분**할 수 있게 해준다.
 - `Dispatchers.Default`
     - 취소 신호를 정상적으로 전달하려면, launch 블록으로 만든 코루틴이 **다른 스레드에서 동작**하게 만들어야 한다. 
-    - Dispatchers.Default로 지정하면 이것이 가능하다.
+    - Dispatchers를 통해 코루틴을 특정 스레드에 배정할 수 있다.
 
 ```kotlin
 fun main(): Unit = runBlocking {
