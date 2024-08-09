@@ -84,7 +84,7 @@
 
 <img width="700" src="https://github.com/user-attachments/assets/d2b8d743-9d75-41b2-b6bd-8f9c62e5ea50"/>
 
-## 문맥 교환 (Context Switch)
+## 문맥 교환 (Context Switching)
 
 **프로세스가 사용되고 있는 상태**를 **문맥**이라고 하는데, 이 정보는 다 PCB에 저장되어 있다. 따라서, **운영체제 입장에서 문맥, 컨텍스트는 결국 PCB를 의미한다**고 볼 수 있다. 
 
