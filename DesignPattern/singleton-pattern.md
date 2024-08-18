@@ -59,10 +59,10 @@ object SingletonObj {
 
 멀티 스레드 환경에서 **단일 인스턴스 생성이 보장**되며, 클래스가 **실제로 사용될 때까지 초기화가 지연**된다.
 
-## 참고자료 
+# 참고자료 
 
 https://velog.io/@haero_kim/혹시-싱글톤이세요-저는-벙글톤이에요-ㅋㅋㅋ
 
 https://inpa.tistory.com/entry/GOF-%F0%9F%92%A0-%EC%8B%B1%EA%B8%80%ED%86%A4Singleton-%ED%8C%A8%ED%84%B4-%EA%BC%BC%EA%BC%BC%ED%95%98%EA%B2%8C-%EC%95%8C%EC%95%84%EB%B3%B4%EC%9E%90
 
-https://github.com/leeeha/Android-TIL/blob/main/Architecture/google-docs-hilt.md
+https://github.com/leeeha/Android-TIL/blob/main/Architecture/google-docs-hilt.md#component-scopes
