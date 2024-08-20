@@ -48,6 +48,12 @@
 <details>
 <summary>다중 처리기 시스템(multi-processor system)에 대해서 설명해주세요.</summary>
 
+- CPU: 명령어를 실행하는 하드웨어
+- Processor: 하나 이상의 CPU를 포함하는 물리적인 칩
+- Multi-processor: 여러 개의 프로세서
+- Core: CPU 안의 연산 단위
+- Multi-core: 각 CPU가 여러 개의 코어를 가지는 것
+
 멀티 프로세싱은 **다수의 프로세서가 협력적으로 여러 작업을 동시에 처리하는 것**이다.
 
 이를 통해 **여러 작업을 병렬적으로 처리**할 수 있고, 한 프로세서가 고장나도 다른 프로세서에 영향을 미치지 않는다는 장점이 있다.
@@ -57,12 +63,6 @@
 CPU 자체를 여러 개 다는 것은 비용이 많이 들기 때문에, 아래 그림처럼 하나의 CPU 안에 여러 개의 코어를 다는 것을 **멀티 코어 설계**라고 한다. 
 
 <img width="450" src="https://github.com/user-attachments/assets/ecebfc6e-eb25-45b8-8eaf-701d74d09363"/>
-
-- CPU: 명령어를 실행하는 하드웨어
-- Processor: 하나 이상의 CPU를 포함하는 물리적인 칩
-- Multi-processor: 여러 개의 프로세서
-- Core: CPU 안의 연산 단위
-- Multi-core: 각 CPU가 여러 개의 코어를 가지는 것
 
 </details>
 
