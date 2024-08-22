@@ -145,13 +145,32 @@ int main(){
 
 # 프로세스 간 통신 
 
-## 공유 메모리 방식 
+IPC (Inter-Process Communication)는 결국 **데이터를 주고 받는 것**이며, 두 가지 기본적인 모델이 있다. 
 
-작성 예정 
+- 공유 메모리 (Shared Memory)
+- 메시지 전달 (Message Passing)
+
+<img width="700" src="https://github.com/user-attachments/assets/bb1393ed-fbf2-4f40-bfdb-add5ecf1008b"/>
+
+## 공유 메모리 방식
+
+- 생산자가 공유 메모리의 버퍼에 데이터를 채우면, 소비자가 이를 소비하는 방식 
+- 프로그래머가 명시적으로 공유 메모리에 접근하거나 조작하는 코드를 작성해야 해서 다소 번거롭다. 
+- 실제 구현: POSIX Shared Memory 
+
+<img width="700" src="https://github.com/user-attachments/assets/1ae0152c-46f8-45f8-ab32-57cb6d324cfd"/>
 
 ## 메시지 전달 방식 
 
-작성 예정 
+- 한 프로세스가 OS 커널의 메시지 큐에 메시지 객체를 넣어두면, OS가 알아서 다른 프로세스에게 해당 메시지를 전달한다. 
+- OS가 메시지 송수신에 필요한 API를 제공하므로 편리하게 사용할 수 있다. 
+  - send(message)
+  - receive(message)
+- 프로세스 간 통신에 사용되는 링크를 구현하는 여러가지 방식 
+  - direct or indirect communication
+  - synchronous or asynchronous communication
+  - automatic or explicit buffering
+- 실제 구현: 파이프, 소켓, RPC (Remote Procedure Call)
 
 # 면접 예상 질문
 
@@ -311,8 +330,9 @@ int main(){
 <details>
 <summary>프로세스끼리 협력하는 방법에 대해서 설명해주세요.</summary>
 
-작성 예정 
-
+- 공유 메모리 방식: 생산자-소비자가 공유 메모리로 버퍼를 사용하도록 프로그래머가 직접 코드를 작성해야 함. 
+- 메시지 전달 방식: OS 커널에서 여러 프로세스가 사용하는 메시지 큐를 알아서 처리해줌. 
+ 
 </details>
 <br>
 
@@ -321,3 +341,5 @@ int main(){
 - https://velog.io/@jxlhe46/OS-Ch3-1-프로세스의-이해
 - https://velog.io/@kangdev/기술면접운영체제-Process와-Thread의-메모리-공유-규칙
 - https://velog.io/@dahyeon405/프로세스-메모리-레이아웃
+- https://dar0m.tistory.com/233
+- https://velog.io/@jxlhe46/OS-Ch3-3.-프로세스-간-통신
