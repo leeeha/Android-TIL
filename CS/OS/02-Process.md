@@ -341,5 +341,5 @@ IPC (Inter-Process Communication)는 결국 **데이터를 주고 받는 것**�
 - https://velog.io/@jxlhe46/OS-Ch3-1-프로세스의-이해
 - https://velog.io/@kangdev/기술면접운영체제-Process와-Thread의-메모리-공유-규칙
 - https://velog.io/@dahyeon405/프로세스-메모리-레이아웃
-- https://dar0m.tistory.com/233
 - https://velog.io/@jxlhe46/OS-Ch3-3.-프로세스-간-통신
+- https://inpa.tistory.com/entry/%F0%9F%91%A9%E2%80%8D%F0%9F%92%BB-multi-process-multi-thread
