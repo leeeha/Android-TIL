@@ -45,14 +45,16 @@ A - - - > B
 
 ## Presentation Layer
 
-- UI (Activity, Fragment), Controller (Presenter, ViewModel) 포함
+>UI (Activity, Fragment), Controller (Presenter, ViewModel) 포함
+
 - Controller는 1개 이상의 UseCase를 실행한다.
 - UI는 UI 각각의 Controller에 의해 조정된다.
 - **Presentation Layer는 Domain Layer에 의존한다.**
 
 ## Domain Layer
 
-- Entity, UseCase, Repository Interface 포함
+>Entity, UseCase, Repository Interface 포함
+
 - UseCase는 Entity와 1개 이상의 Repository Interface를 결합한다.
 - **핵심 비즈니스 규칙을 포함**하고 있기 때문에, 다른 레이어와 달리 **쉽게 변경되어서는 안 된다.**
 - Domain Layer는 가장 안쪽에 있는 레이어로, 앞서 언급한 의존성 규칙에 따라 **다른 어떤 레이어에도 의존성을 갖지 않는다.**
@@ -60,15 +62,16 @@ A - - - > B
 - **Domain Layer가 Data Layer에 의존하지 않을 수 있는 이유는?**
     - **의존성 역전 법칙** (DIP, Dependency Inversion Principle) 덕분에 가능!
     - **DIP는 상위 레벨의 모듈은 하위 레벨의 모듈에 의존해서는 안 되며, 둘 다 추상화에 의존해야 한다는 법칙**
-    - Domain Layer는 Data Layer에 있는 Repository의 구현체가 아니라, 이를 추**상화 시킨 인터페이스에 의존**하기 때문에 Data Layer에 대한 직접적인 의존성을 회피할 수 있다.
+    - Domain Layer는 Data Layer에 있는 Repository의 구현체가 아니라, 이를 **추상화 시킨 인터페이스에 의존**하기 때문에 **Data Layer에 대한 직접적인 의존성을 회피**할 수 있다.
 
 ## Data Layer
 
-- Repository Implementation, 1개 이상의 DataSource 포함
+>Repository Implementation, 1개 이상의 DataSource 포함
+
 - **Domain Layer의 Repository 인터페이스를 구현할 책임이 있다.**
 - **Repository는 여러 DataSource를 결합 및 조정한다.** 예를 들어, 로컬 데이터 소스와 원격 데이터 소스를 결합할 수 있다.
 - 단, Data Layer의 Repository도 DataSource의 구현체에 직접적으로 의존하지 않는다. DIP의 적용으로, **DataSource의 구현체가 아닌 인터페이스에 의존한다.** 이를 통해 DataSource가 변경되어도 Repository에 미치는 영향은 최소화 할 수 있다.
-- **Repository 패턴**: 데이터 소스와 무관하게 동일한 인터페이스로 데이터를 사용할 수 있는 패턴
+- **Repository 패턴**: 데이터 소스의 변경사항과 무관하게 동일한 인터페이스로 데이터를 사용할 수 있는 패턴
 - **Data Layer는 Domain Layer에 의존한다.**
 
 # 제어의 흐름
@@ -77,26 +80,33 @@ A - - - > B
 
 위의 그림은 **제어의 흐름** (Flow of control)을 나타내고 있는데, 계층 간의 경계를 횡단하는 방법을 보여준다. 
 
-안드로이드에 대응시켜 이해해보면, 시스템 이벤트 또는 사용자 입력을 Controller로 받아서 UseCase에서 로직을 처리한 뒤에 그 결과를 UI에 렌더링 하는 것이라고 이해할 수 있다. 
+안드로이드에 대응시켜 이해해보면, 시스템 이벤트 또는 사용자 입력을 Controller로 받아서 UseCase에서 로직을 처리한 뒤에 그 결과를 UI에 렌더링 하는 것이라고 이해할 수 있다.
 
 <img width="800" src="https://github.com/user-attachments/assets/14f7d7a4-ac44-422e-b122-3f8372c7b10f"/>
 
+[단방향 데이터 흐름 (UDF)](https://github.com/leeeha/Android-TIL/blob/main/Architecture/android-app-architecture.md#%EB%8B%A8%EB%B0%A9%ED%96%A5-%EB%8D%B0%EC%9D%B4%ED%84%B0-%ED%9D%90%EB%A6%84-unidirectional-data-flow-udf) 관점에서 보면 다음과 같다.
+
+- 이벤트 전달 방향: UI → Data 
+- 상태나 데이터 전달 방향: UI ← Data 
+
+<img width="500" src="https://github.com/user-attachments/assets/11c86f31-fa51-43bb-b2bd-fc223be86eae"/>
+
 예를 들어, UseCase에서 Presenter와 같이 하위 계층의 코드를 직접 참조하여 호출하면, 클린 아키텍처의 의존성 규칙을 위반하게 된다. 
 
-이렇게 제어의 흐름 (Domain → Presentation) 과 의존성 방향 (Presentation → Domain) 이 반대가 되는 경우에는 인터페이스와 함께 의존성 역전 법칙을 적용하면 된다. 
+이렇게 제어의 흐름 (Domain → Presentation) 과 의존성 방향 (Presentation → Domain) 이 반대가 되는 경우에는 인터페이스와 함께 **의존성 역전 법칙**을 적용하면 된다. 
 
-계층을 횡단하면서 데이터를 전달할 때, 데이터는 항상 내부 원에서 사용하기 가장 편리한 형태를 가져야만 한다. 
+계층을 횡단하면서 데이터를 전달할 때, 데이터는 항상 **내부 원에서 사용하기 가장 편리한 형태**를 가져야만 한다. 
 
 예를 들어, 서버에 저장된 사용자 정보를 갱신하기 위해 다음과 같은 로직을 생각해보자.
 
 - 사용자 정보를 갱신하기 위해 API를 호출한다.
-- Domain 레이어에서 사용자 정보는 User라는 타입으로 표현한다.
-- Presentation 레이어에서 View에 사용자 정보를 나타낼 때는 UserUiModel로 표현한다.
-- Data 레이어에서 서버로부터 응답을 받은 사용자 정보는 UserDto로 표현한다.
+- Domain 레이어에서 사용자 정보는 `User` 라는 타입으로 표현한다.
+- Presentation 레이어에서 View에 사용자 정보를 나타낼 때는 `UserUiModel` 로 표현한다.
+- Data 레이어에서 서버로부터 응답을 받은 사용자 정보는 `UserDto` 로 표현한다.
 
-사용자 정보 갱신 API 호출을 위해 액티비티에서 유즈케이스를 호출할 때, UserUiModel 타입은 User 타입으로 변환해야 한다. 
+사용자 정보 갱신 API 호출을 위해 액티비티에서 유즈케이스를 호출할 때, `UserUiModel` 타입은 `User` 타입으로 변환해야 한다. 
 
-레트로핏을 통해 API 요청에 따른 응답 UserDto를 받고, 이를 다시 유즈케이스로 넘기기 위해서는 User 타입으로 변환해야 한다. 
+레트로핏을 통해 API 요청에 따른 응답 `UserDto` 를 받고, 이를 다시 유즈케이스로 넘기기 위해서는 `User` 타입으로 변환해야 한다. 
 
 흐름이 반대 방향일 때도 마찬가지로 타입을 변환해줘야 한다. 
 
