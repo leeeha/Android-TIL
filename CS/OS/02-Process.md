@@ -225,7 +225,7 @@ IPC (Inter-Process Communication)는 결국 **데이터를 주고 받는 것**�
 - 프로세스 식별 번호 (Process ID, PID)
 - 프로세스 상태 (New, Running, Waiting, Ready, Terminated)
 - 프로그램 카운터 (다음에 실행될 명령어의 주소를 저장하고 있는 레지스터)
-- CPU 레지스터 
+- CPU 레지스터 정보 (CPU 레지스터는 CPU의 명령어 처리 및 데이터 연산에 필요한 고속의 작은 메모리 공간)
 - CPU 스케줄링 정보 
 - 메모리 관리 정보 
 - 입출력 상태 정보 
