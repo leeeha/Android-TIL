@@ -273,7 +273,7 @@ IPC (Inter-Process Communication)는 결국 **데이터를 주고 받는 것**�
 
 ### 더 높은 우선순위의 프로세스가 Ready 큐에 도착한 경우
 
-- SRJF 같은 선점형 스케줄링의 경우, 우선순위가 더 높은 프로세스가 Ready 큐에 도착하면 기존 프로세스를 선점하면서 문맥 교환이 발생한다. 
+- SRTF 같은 선점형 스케줄링의 경우, 우선순위가 더 높은 프로세스가 Ready 큐에 도착하면 기존 프로세스를 선점하면서 문맥 교환이 발생한다. 
 
 <img width="600" src="https://github.com/user-attachments/assets/3e9c8eda-dce6-4960-9e31-5e976cb84e8e"/>
 
