@@ -1,6 +1,6 @@
 # CPU 스케줄링 
 
-CPU 스케줄링은 멀티 프로그래밍 운영체제에서 필수적이다. 멀티 프로그래밍의 목적은 **동시에 여러 개의 프로세스를 돌려서 CPU 사용 효율을 최대화** 하는 것이다.
+CPU 스케줄링은 멀티 프로그래밍 운영체제에서 필수적이다. 멀티 프로그래밍의 목적은 **동시에 여러 개의 프로세스를 돌려서 CPU 사용률을 최대화** 하는 것이다.
 
 <img width="700" src="https://github.com/user-attachments/assets/9948b4d8-cf90-4fed-a5ca-545532092a34"/> 
 
@@ -53,11 +53,11 @@ CPU 디스패처는 **한 프로세스에서 다른 프로세스로 문맥을 �
 
 ## 스케줄링의 목표
 
-- CPU utilization (사용 효율) 최대화
-- Throughput (처리량, 단위시간당 처리한 프로세스의 개수) 최대화
-- Turnaround time (반환 시간, 요청을 보내고 그것이 완료될 때까지 걸린 시간) 최소화
-- Waiting time (프로세스가 ready queue에서 대기한 시간) 최소화
-- Response time (응답 시간, 요청에 응답하는 데 걸리는 시간) 최소화
+- CPU utilization (사용률) 최대화
+- Throughput (처리량, 단위 시간당 처리한 프로세스의 개수) 최대화
+- Turnaround time (처리 시간, 프로세스가 완료될 때까지 걸린 시간) 최소화
+- Waiting time (프로세스가 ready queue에서 대기한 시간의 총합) 최소화
+- Response time (응답 시간, 프로세스가 처음으로 CPU를 할당 받기까지 걸린 시간) 최소화
 
 ## FCFS: First-Come, First-Served
 
@@ -99,7 +99,7 @@ CPU 디스패처는 **한 프로세스에서 다른 프로세스로 문맥을 �
 ### 정의 
 
 - **프로세스에 주어진 우선순위에 따라 스케줄링 한다.** (여러 프로세스의 우선순위가 동일하다면 FCFS 알고리즘 수행) 
-- **SJF, SRTF 모두 우선순위 기반 스케줄링**의 일종이다. CPU burst time이 작을수록 우선순위가 높은 것이다. 
+- **SJF, SRTF 모두 우선순위 기반 스케줄링**의 일종이다. **CPU burst time이 작을수록 우선순위가 높은 것**이다. 
 
 ### 특징 
 
@@ -118,8 +118,8 @@ CPU 디스패처는 **한 프로세스에서 다른 프로세스로 문맥을 �
 
 ### 특징 
 
-- **선점형** 알고리즘
-- 프로세스의 CPU burst time이 time quantum보다 길면, 해당 프로세스는 스케줄러에 의해 선점되고 Ready Queue의 tail로 추가된다.
+- CPU burst time <= time quantum : 프로세스가 자발적으로 CPU를 반환하고, 스케줄러는 레디 큐의 다음 프로세스로 넘어감. 
+- CPU burst time > time quantum : **타이머가 종료되어 OS에 인터럽트 발생 → 레디 큐에 있던 다른 프로세스가 CPU 선점 (컨텍스트 스위칭)** → 원래 프로세스는 레디 큐의 Tail 위치에 추가 
 - **time quantum 크기에 따라 성능이 크게 달라진다.** 할당 시간이 너무 길면 FCFS랑 동일해지고, 할당 시간이 너무 작으면 프로세스 간의 컨텍스트 스위칭이 빈번하게 발생하여 dispatch latency가 커진다. 
 
 # 면접 예상 질문 
