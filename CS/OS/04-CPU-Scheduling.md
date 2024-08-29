@@ -122,6 +122,92 @@ CPU 디스패처는 **한 프로세스에서 다른 프로세스로 문맥을 �
 - 프로세스의 CPU burst time이 time quantum보다 길면, 해당 프로세스는 스케줄러에 의해 선점되고 Ready Queue의 tail로 추가된다.
 - **time quantum 크기에 따라 성능이 크게 달라진다.** 할당 시간이 너무 길면 FCFS랑 동일해지고, 할당 시간이 너무 작으면 프로세스 간의 컨텍스트 스위칭이 빈번하게 발생하여 dispatch latency가 커진다. 
 
+# 면접 예상 질문 
+
+<details>
+<summary>기아 상태가 무엇인가요?</summary>
+
+
+
+</details>
+<br>
+
+<details>
+<summary>기아 상태를 어떻게 해결할 수 있나요?</summary>
+
+
+</details>
+<br>
+
+<details>
+<summary>CPU 스케줄링에 대해 설명해주세요.</summary>
+
+
+</details>
+<br>
+
+<details>
+<summary>스케줄러의 종류는 무엇이 있나요?</summary>
+
+
+</details>
+<br>
+
+<details>
+<summary>선점형 스케줄링과 비선점형 스케줄링의 차이가 무엇인가요?</summary>
+
+
+</details>
+<br>
+
+<details>
+<summary>선입선출 스케줄링(FCFS)에 대해 설명해주세요.</summary>
+
+
+</details>
+<br>
+
+<details>
+<summary>최단 작업 우선 스케줄링(SJF)에 대해 설명해주세요.</summary>
+
+
+</details>
+<br>
+
+<details>
+<summary>최소 잔류 시간 우선 스케줄링(SRTF) 방식에 대해 설명해주세요.</summary>
+
+
+</details>
+<br>
+
+<details>
+<summary>우선순위 스케줄링에 대해 설명해주세요.</summary>
+
+
+</details>
+<br>
+
+<details>
+<summary>라운드 로빈 스케줄링에 대해 설명해주세요.</summary>
+
+
+</details>
+<br>
+
+<details>
+<summary>멀티 레벨 큐 스케줄링에 대해 설명해주세요.</summary>
+
+
+</details>
+<br>
+
+<details>
+<summary>멀티 레벨 피드백 큐 스케줄링에 대해 설명해주세요.</summary>
+
+
+</details>
+<br>
 
 # 참고자료 
 
