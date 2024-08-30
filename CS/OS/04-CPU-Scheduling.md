@@ -176,6 +176,12 @@ CPU 디스패처는 **한 프로세스에서 다른 프로세스로 문맥을 �
 
 CPU 스케줄러가 Ready Queue에 있는 프로세스 중에 어떤 프로세스를 가장 먼저 CPU에 패치시켜 실행시킬지 결정하는 것 
 
+- CPU utilization (사용률) 최대화
+- Throughput (처리량, 단위 시간당 처리한 프로세스의 개수) 최대화
+- Turnaround time (처리 시간, 시스템에 요청을 보낸 후 프로세스가 완료될 때까지 걸린 시간) 최소화
+- Waiting time (프로세스가 ready queue에서 대기한 시간의 총합) 최소화
+- Response time (응답 시간, 프로세스가 처음으로 CPU를 할당 받기까지 걸린 시간) 최소화
+
 </details>
 <br>
 
