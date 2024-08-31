@@ -97,8 +97,9 @@
 
 ## 스케줄링 큐 
 
-- 프로세스가 시스템에 진입하면 `Ready Queue`에 들어가게 되는데, 레디 큐 안의 프로세스들은 **CPU 코어에서 실행될 준비를 마치고 대기**하고 있다. 
-- **입출력 작업이나 특정 이벤트가 완료될 때까지 대기**하고 있는 프로세스들은 `Waiting Queue`에 들어간다.
+- `Ready Queue` : CPU에서 실행될 준비를 마치고 대기하고 있는 프로세스
+- `Block (Wait) Queue` : I/O 요청을 보내고 해당 작업이 완료될 때까지 대기하는 프로세스 
+- `Device Queue` : 특정 장치를 사용하기 위해 대기하고 있는 프로세스 (각 장치마다 별도의 디바이스 큐를 가진다.)
 - 이러한 큐들은 일반적으로 **PCB의 연결 리스트**로 구현된다.
 
 <img width="700" src="https://github.com/user-attachments/assets/ca3269bd-6f9e-485c-9a19-fb9485de83f5"/>
@@ -327,7 +328,16 @@ IPC (Inter-Process Communication)는 결국 **데이터를 주고 받는 것**�
 <details>
 <summary>문맥 교환 발생 과정에 대해서 조금 더 상세히 설명해주세요.</summary>
 
+<img width="700" src="https://github.com/user-attachments/assets/cd2a3b10-abf7-4143-aeb8-f3e3e0a07625"/> 
 
+- 시스템 콜이나 인터럽트가 발생하여 커널의 호출이 필요한 상황이 나타난다.
+- 프로그램 카운터와 레지스터 값 등 문맥 정보를 커널에 있는 해당 프로세스의 PCB에 저장한다.
+- 현재 프로세스의 상태를 바꿔준다. (Running -> Blocked or Ready)
+- 프로세스의 상태에 따라 PCB를 적절한 큐에 넣어준다. (Block Queue, Ready Queue 등)
+- 다음에 수행시킬 다른 프로세스를 선택한다.
+- 선택된 프로세스의 상태를 Running으로 바꿔준다.
+- 선택된 프로세스의 문맥 정보를 복구한다.
+- CPU는 새롭게 선택된 프로세스를 수행한다.
 
 </details>
 <br>
