@@ -84,7 +84,9 @@ Error color는 정적 컬러의 예시이다. 모든 dynamic color scheme에서�
 - Surface container high
 - Surface container highest
 
-<img width="500" alt="스크린샷 2024-09-09 오후 8 19 36" src="https://github.com/user-attachments/assets/b4e7253a-124b-4985-a69c-b4494bcb507f">
+<img width="400" alt="스크린샷 2024-09-09 오후 8 36 32" src="https://github.com/user-attachments/assets/5045b473-2bc1-41e9-a40b-7cb0fda7661f">
+
+<img width="600" alt="스크린샷 2024-09-09 오후 8 19 36" src="https://github.com/user-attachments/assets/b4e7253a-124b-4985-a69c-b4494bcb507f">
 
 기본적으로 네비게이션 바, 메뉴, 다이얼로그 같은 neutral color 컴포넌트에 특정한 surface container color가 매핑되지만, 이러한 역할은 개발자가 사용자 요구사항에 맞게 조정할 수 있다. 
 
