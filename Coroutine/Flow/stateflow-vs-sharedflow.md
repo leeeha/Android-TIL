@@ -18,23 +18,20 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 fun main(): Unit = runBlocking {
-    val sharedFlow = MutableSharedFlow<Int>()
+    val sharedFlow = MutableSharedFlow<Int>() // 초기값 없음
 
-    // Collect values from sharedFlow
     launch {
         sharedFlow.collect { value ->
             println("Collector 1 received: $value")
         }
     }
 
-    // Collect values from sharedFlow
     launch {
         sharedFlow.collect { value ->
             println("Collector 2 received: $value")
         }
     }
 
-    // Emit values to sharedFlow
     launch {
         repeat(3) { i ->
             sharedFlow.emit(i)
@@ -52,10 +49,12 @@ Collector 1 received: 2
 Collector 2 received: 2
 ```
 
+하나의 데이터 스트림을 여러 수신자가 공유한다는 걸 확인할 수 있다. 
+
 # StateFlow
 
 - StateFlow는 **상태를 나타내는 Hot Stream**으로, **한 번에 하나의 값을 보유**한다.
-- 새로운 값이 방출되면 가장 최근 값이 유지되고 즉시 새로운 수신자로 방출되는 [conflated flow](https://kotlinworld.com/254)이기도 하다.
+- **새로운 값이 방출되면 가장 최근 값이 유지되고 즉시 새로운 수신자로 방출**되는 [conflated flow](https://kotlinworld.com/254)이기도 하다.
 - 상태에 대한 SSOT(Single Source Of Truth)를 유지하고 **모든 수신자를 최신 상태로 자동 업데이트** 해야 할 때 유용하다.
 - 항상 **초기값**을 가지며, **가장 최근에 방출된 값만 저장**한다.
 
@@ -69,26 +68,23 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 fun main(): Unit = runBlocking {
-    val mutableStateFlow = MutableStateFlow(0)
+    val mutableStateFlow = MutableStateFlow(99) // 초기값 필수 
     val stateFlow: StateFlow<Int> = mutableStateFlow.asStateFlow()
 
-    // Collect values from stateFlow
     launch {
         stateFlow.collect { value ->
             println("Collector 1 received: $value")
         }
     }
 
-    // Collect values from stateFlow
     launch {
         stateFlow.collect { value ->
             println("Collector 2 received: $value")
         }
     }
 
-    // Update the state
     launch {
-        repeat(3) { i ->
+        repeat(5) { i ->
             mutableStateFlow.value = i
         }
     }
@@ -96,11 +92,145 @@ fun main(): Unit = runBlocking {
 ```
 
 ```
-Collector 1 received: 0
-Collector 2 received: 0
-Collector 1 received: 2
-Collector 2 received: 2
+Collector 1 received: 99
+Collector 2 received: 99
+Collector 1 received: 4
+Collector 2 received: 4
 ```
+
+생산자가 emit 하기 전에는 초기값 0이 출력되고, 빠르게 값이 변해서 마지막으로 방출된 4가 출력된다.
+
+## SharedFlow와의 차이점 
+
+### 가장 최근 값 하나만 유지 
+
+두 개 모두 hot stream이지만 SharedFlow가 일반화 된 버전이라면, StateFlow는 SharedFlow의 param을 특정 값으로 고정시켜 놓은 형태(replay = 1)로 볼 수 있다. 
+
+즉, 새로운 구독자는 가장 최근의 값 하나만 수신하게 된다. 
+
+```kotlin
+// MutableStateFlow(initialValue) is a shared flow with the following parameters:
+val shared = MutableSharedFlow(
+    replay = 1,
+    onBufferOverflow = BufferOverflow.DROP_OLDEST
+)
+```
+
+### 이전과 다른 값이 들어올 때만 방출 
+
+내부적으로 아래와 같이 코드가 작성되어 있기 때문에, 이전과 다른 값이 들어올 때만 emit을 호출하게 된다. 
+
+```kotlin
+override suspend fun collect(collector: FlowCollector<T>) {
+    val slot = allocateSlot()
+    try {
+        ...
+            collectorJob?.ensureActive()
+            // Conflate value emissions using equality
+            if (oldState == null || oldState != newState) {
+                collector.emit(NULL.unbox(newState))
+                oldState = newState
+            }
+        ...            
+    }
+```
+
+0.5초 간격으로 100을 5번 emit 하는 예시를 보자. 
+
+```kotlin
+fun main(): Unit = runBlocking {
+    val viewModel = MainViewModel()
+
+    launch {
+        viewModel.sharedFlow.collect {
+            println("sharedFlow: $it")
+        }
+    }
+
+    launch {
+        viewModel.stateFlow.collect {
+            println("stateFlow: $it")
+        }
+    }
+
+    launch {
+        viewModel.emitFlow()
+    }
+}
+
+class MainViewModel {
+    private val _stateFlow = MutableStateFlow(99)
+    val stateFlow = _stateFlow
+
+    private val _sharedFlow = MutableSharedFlow<Int>(
+        replay = 0,
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    val sharedFlow = _sharedFlow
+
+    suspend fun emitFlow() {
+        repeat(5) { i ->
+            println("emit #$i")
+
+            _sharedFlow.emit(100)
+            _stateFlow.value = 100
+
+            delay(500)
+        }
+    }
+}
+```
+
+>stateFlow: 99<br>
+emit #0<br>
+sharedFlow: 100<br>
+stateFlow: 100<br>
+emit #1<br>
+sharedFlow: 100<br>
+emit #2<br>
+sharedFlow: 100<br>
+emit #3<br>
+sharedFlow: 100<br>
+emit #4<br>
+sharedFlow: 100<br>
+
+- SharedFlow: 100을 5번 출력 
+- StateFlow: 초기값 99 출력 -> 100을 한번만 출력 
+
+아래와 같이 매번 다른 값을 emit 하면 어떻게 될까? 
+
+```kotlin
+suspend fun emitFlow() {
+    repeat(5) { i ->
+        println("emit #$i")
+
+        _sharedFlow.emit(100 * i)
+        _stateFlow.value = 100 * i
+
+        delay(500)
+    }
+}
+```
+
+>stateFlow: 99<br>
+emit #0<br>
+sharedFlow: 0<br>
+stateFlow: 0<br>
+emit #1<br>
+sharedFlow: 100<br>
+stateFlow: 100<br>
+emit #2<br>
+sharedFlow: 200<br>
+stateFlow: 200<br>
+emit #3<br>
+sharedFlow: 300<br>
+stateFlow: 300<br>
+emit #4<br>
+sharedFlow: 400<br>
+stateFlow: 400<br>
+
+SharedFlow, StateFlow 모두 0, 100, 200, 300, 400 까지 출력한다. 
 
 # 인터페이스 계층 구조
 
@@ -136,7 +266,7 @@ public interface StateFlow<out T> : SharedFlow<T> {
 ### [StateFlow](https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-core/common/src/flow/StateFlow.kt)
 
 - SharedFlow를 상속하는 StateFlow는 추가로 **기본값을 가지고 있으며**
-- replaceCache는 **가장 최근의 값 하나**를 갖는 리스트로 재정의 하고 있다.
+- replayCache는 **가장 최근의 값 하나**를 갖는 리스트로 재정의 하고 있다.
 
 # Best Practices
 
@@ -432,3 +562,4 @@ fun main() = runBlocking {
 - https://medium.com/@mortitech/sharedflow-vs-stateflow-a-comprehensive-guide-to-kotlin-flows-503576b4de31
 - [https://medium.com/prnd/mvvm의-viewmodel에서-이벤트를-처리하는-방법-6가지-31bb183a88ce](https://medium.com/prnd/mvvm%EC%9D%98-viewmodel%EC%97%90%EC%84%9C-%EC%9D%B4%EB%B2%A4%ED%8A%B8%EB%A5%BC-%EC%B2%98%EB%A6%AC%ED%95%98%EB%8A%94-%EB%B0%A9%EB%B2%95-6%EA%B0%80%EC%A7%80-31bb183a88ce)
 - https://www.youtube.com/watch?v=6Jc6-INantQ&t=369s
+- https://tourspace.tistory.com/434
