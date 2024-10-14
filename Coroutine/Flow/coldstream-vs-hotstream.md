@@ -237,8 +237,8 @@ Hot Stream은 방송국 **라디오**에 비유할 수 있다.
 |  | Cold Stream | Hot Stream |
 | --- | --- | --- |
 | 데이터를 생산하는 위치 | 내부 | 외부 |
-| 데이터를 생산하는 시점 | 소비자가 소비를 시작할 때 생산 <br> (Lazy Stream) | 소비자와 무관하게 생산 <br> (Eager Stream)  |
-| 생산자에 대응하는 소비자 개수 | 하나의 생산자에 하나의 소비자 존재  <br> (Unicast) | 하나의 생산자에 다수의 소비자 존재 <br> (Multicast) |
+| 데이터를 생산하는 시점 | 소비자가 소비를 시작할 때 생산 (Lazy Stream) | 소비자와 무관하게 생산 (Eager Stream)  |
+| 생산자에 대응하는 소비자 개수 | 하나의 생산자에 하나의 소비자 존재 (Unicast, 각 소비자의 구독은 독립적) | 하나의 생산자에 다수의 소비자 존재 (Multicast, 하나의 데이터 스트림을 여러 소비자가 공유) |
 | 사용 사례  | 서버에 데이터 요청, DB 쿼리 등  | - 모든 수신자를 최신 상태로 갱신 (StateFlow)<br> - 일회성 이벤트에 대한 처리 (SharedFlow)  |
 | 예시 | Flow | Channel, StateFlow, SharedFlow |
 
