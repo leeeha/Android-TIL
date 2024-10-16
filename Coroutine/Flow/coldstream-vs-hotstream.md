@@ -242,6 +242,55 @@ Hot Stream은 방송국 **라디오**에 비유할 수 있다.
 | 사용 사례  | 서버에 데이터 요청, DB 쿼리 등  | - 모든 수신자를 최신 상태로 갱신 (StateFlow)<br> - 일회성 이벤트에 대한 처리 (SharedFlow)  |
 | 예시 | Flow | Channel, StateFlow, SharedFlow |
 
+# Cold flow → Hot flow 변환 
+
+Cold flow는 앞서 설명한 대로, 각 소비자가 구독을 시작할 때마다 독립적으로 데이터가 생산된다. 
+
+네트워크 연결을 맺고 서버로부터 데이터를 받아오는 것처럼, **flow 생성 자체에 비용이 많이 들 때는 하나의 flow만 생성하고 여러 소비자가 이를 공유하는 것이 훨씬 효율적**이다.
+
+이처럼 Cold flow를 Hot flow로 변환하기 위해, **shareIn, stateIn 확장함수**를 이용할 수 있다.
+
+## shareIn 
+
+```kotlin 
+fun <T> Flow<T>.shareIn(scope: CoroutineScope,
+                        started: SharingStarted,
+                        replay: Int = 0): SharedFlow<T>
+```
+
+## stateIn 
+
+```kotlin 
+fun <T> Flow<T>.stateIn(scope: CoroutineScope,
+                        started: SharingStarted,
+                        initialValue: T): StateFlow<T>
+```
+
+## SharingStarted
+
+- `SharingStarted.Eagerly`
+  - 구독자가 존재하지 않아도 upstream flow의 공유가 바로 시작되며, 중간에 중지되지 않는다. 
+  - replay 개수만큼 이전에 방출된 데이터 캐싱 
+  - BufferOverflow.DROP_OLDEST 기반으로 동작
+- `SharingStarted.Lazily`
+  - 첫번째 구독자가 등록되면 upstream flow의 공유가 시작되며, 중간에 중지되지 않는다.
+  - 첫번째 구독자는 그동안 방출된 모든 값을, 이후의 구독자들은 replay에 설정된 개수만큼 얻어가며 collect를 시작한다. 
+- `SharingStarted.WhileSubscribed`
+  - 첫번째 구독자가 등록되면 upstream flow의 공유가 시작되며, 구독자가 전부 없어지면 바로 중지된다. 
+  - `stopTimeoutMillis`
+    - 구독자가 모두 없어진 후, flow 취소까지 걸리는 delay 시간 지정 
+    - 화면 회전 시에는 취소하지 않고, 앱이 백그라운드로 전환되면 취소하도록 설정 가능 
+  - `replayExpriationMilis`
+    - replay를 위해 캐시해둔 데이터의 만료 시간 지정 
+    - 기본값은 Long.MAX_VALUE여서 무한히 캐시되지만, 만료 시간 지정하여 replay 캐시 데이터 초기화 가능 
+  
+```kotlin 
+fun WhileSubscribed(
+    stopTimeoutMillis: Long = 0,
+    replayExpirationMillis: Long = Long.MAX_VALUE
+): SharingStarted
+```
+
 # 참고자료
 
 - [Flow와 Channel, Cold Stream과 Hot Stream](https://medium.com/@apfhdznzl/flow와-channel-cold-stream과-hot-stream-c42c64cf4996)
