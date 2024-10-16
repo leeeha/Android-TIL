@@ -5,11 +5,11 @@ SharedFlow와 StateFlow는 모두 **비동기 데이터 스트림**을 처리하
 # SharedFlow
 
 - SharedFlow는 **여러 수신자를 가질 수 있는 Hot stream**이다.
-- 수신자와 독립적으로 값을 내보낼 수 있으며, 여러 수신자가 Flow로부터 동일한 값을 수집할 수 있다.
+- **수신자와 독립적으로 값을 내보낼 수 있으며**, 여러 수신자가 Flow로부터 동일한 값을 수집할 수 있다.
 - **여러 수신자에 값을 브로드캐스트** 해야 하거나 **동일한 데이터 스트림에 대해 여러 명의 구독자를 보유**하려는 경우에 유용하다.
 - **초기값이 없으며**, 새로운 수신자에 대해 **이전에 방출된 값의 개수**를 저장하도록 **replayCache**를 구성할 수 있다.
 
-<img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/1b257a68-66b9-47a8-97b0-d09d68d60288"/>
+<img width="600" src="https://github.com/leeeha/Android-TIL/assets/68090939/1b257a68-66b9-47a8-97b0-d09d68d60288"/>
 
 ```kotlin
 package org.example
@@ -49,12 +49,12 @@ Collector 1 received: 2
 Collector 2 received: 2
 ```
 
-하나의 데이터 스트림을 여러 수신자가 공유한다는 걸 확인할 수 있다. 
+동일한 데이터 스트림을 여러 수신자가 공유한다는 걸 확인할 수 있다. 
 
 # StateFlow
 
 - StateFlow는 **상태를 나타내는 Hot Stream**으로, **한 번에 하나의 값을 보유**한다.
-- **새로운 값이 방출되면 가장 최근 값이 유지되고 즉시 새로운 수신자로 방출**되는 [conflated flow](https://kotlinworld.com/254)이기도 하다.
+- **새로운 값이 방출되면 가장 최근 값이 유지되고, 즉시 새로운 수신자로 방출**되는 [conflated flow](https://kotlinworld.com/254)이기도 하다.
 - 상태에 대한 SSOT(Single Source Of Truth)를 유지하고 **모든 수신자를 최신 상태로 자동 업데이트** 해야 할 때 유용하다.
 - 항상 **초기값**을 가지며, **가장 최근에 방출된 값만 저장**한다.
 
@@ -98,15 +98,15 @@ Collector 1 received: 4
 Collector 2 received: 4
 ```
 
-생산자가 emit 하기 전에는 초기값 0이 출력되고, 빠르게 값이 변해서 마지막으로 방출된 4가 출력된다.
+생산자가 emit 하기 전에는 초기값 99가 출력되고, 빠르게 값이 변해서 마지막으로 방출된 4가 출력된다.
 
 ## SharedFlow와의 차이점 
 
 ### 가장 최근 값 하나만 유지 
 
-두 개 모두 hot stream이지만 SharedFlow가 일반화 된 버전이라면, StateFlow는 SharedFlow의 param을 특정 값으로 고정시켜 놓은 형태(replay = 1)로 볼 수 있다. 
+두 개 모두 hot stream이지만 SharedFlow가 일반화 된 버전이라면, **StateFlow는 SharedFlow의 매개변수를 특정 값으로 고정시켜 놓은 형태(replay = 1)**로 볼 수 있다. 
 
-즉, 새로운 구독자는 가장 최근의 값 하나만 수신하게 된다. 
+즉, 새로운 구독자는 **가장 최근의 값 하나만 수신**하게 된다. 
 
 ```kotlin
 // MutableStateFlow(initialValue) is a shared flow with the following parameters:
@@ -118,8 +118,7 @@ val shared = MutableSharedFlow(
 
 ### 이전과 다른 값이 들어올 때만 방출 
 
-내부적으로 아래와 같이 코드가 작성되어 있기 때문에, 이전과 다른 값이 들어올 때만 emit을 호출하게 된다. 
-
+내부적으로 아래와 같이 코드가 작성되어 있기 때문에, **이전과 다른 값이 들어올 때만 emit** 하게 된다. 
 ```kotlin
 override suspend fun collect(collector: FlowCollector<T>) {
     val slot = allocateSlot()
@@ -135,7 +134,7 @@ override suspend fun collect(collector: FlowCollector<T>) {
     }
 ```
 
-0.5초 간격으로 100을 5번 emit 하는 예시를 보자. 
+0.5초 간격으로 동일한 숫자 100을 5번 emit 하는 예시를 보자. 
 
 ```kotlin
 fun main(): Unit = runBlocking {
@@ -261,7 +260,7 @@ public interface StateFlow<out T> : SharedFlow<T> {
 ### [SharedFlow](https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-core/common/src/flow/SharedFlow.kt)
 
 - **replayCache** 크기를 정의하여 새로운 구독자에게 전달할 **이전에 방출된 값의 개수**를 설정할 수 있다.
-- 구독자들을 Slot이라는 형태로 관리하여, 값이 전달될 때 **활성화 된 모든 구독자에게 새로운 값이 전달**되게 한다.
+- 구독자들을 Slot이라는 형태로 관리하여, **활성화 된 모든 구독자**에게 방출된 값이 전달되게 한다.
 
 ### [StateFlow](https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-core/common/src/flow/StateFlow.kt)
 
@@ -536,6 +535,7 @@ class EventListener(
 ```kotlin
 fun main() = runBlocking {
     val eventBus = EventBus<Event>()
+
     // eventBus로부터 이벤트를 수신하기 위한 이벤트 리스너 초기화 
     val eventListener = EventListener(eventBus, this)
 
@@ -555,6 +555,12 @@ fun main() = runBlocking {
     delay(5000)
 }
 ```
+
+>EventA received<br>
+EventB received<br>
+EventC received with value: 42<br>
+
+코드를 실행시켜보면 1초 단위로 이벤트를 send, receive 하는 것을 확인할 수 있다.
 
 # 참고자료
 
