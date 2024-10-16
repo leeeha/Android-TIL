@@ -295,4 +295,5 @@ fun WhileSubscribed(
 
 - [Flow와 Channel, Cold Stream과 Hot Stream](https://medium.com/@apfhdznzl/flow와-channel-cold-stream과-hot-stream-c42c64cf4996)
 - https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/
+- https://tourspace.tistory.com/434
 - https://github.com/mdb1217/TIL/blob/main/Kotlin/Coroutine/Hot%20Stream%20VS%20Cold%20Stream.md
