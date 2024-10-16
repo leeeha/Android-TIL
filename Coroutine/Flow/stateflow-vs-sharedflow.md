@@ -323,9 +323,30 @@ val sharedFlow = MutableSharedFlow<Int>(
 )
 ```
 
-- replay : 새로운 구독자에게 반복적으로 전달할 이벤트의 개수
-- extraBufferCapacity : 방출된 데이터를 저장해둘 추가 버퍼의 용량 (배압 문제 방지)
-- onBufferOverflow : 버퍼가 가득 찼을 때의 동작 정의
+- **replay : 새로운 구독자에게 전달할 이전 데이터의 개수**
+  - 0 -> 1 -> 2 -> 3 -> collect -> 4 -> 5 -> 6 
+  - replay = 0 : 4부터 수신 
+  - replay = 1 : 3부터 수신
+  - replay = 4 : 0부터 수신 
+- **extraBufferCapacity : 방출된 데이터를 저장해둘 버퍼의 개수 설정**
+  - 데이터의 생산 속도에 비해 소비 속도가 느릴 때, 지정한 개수만큼 버퍼에 저장할 수 있다.
+  - 버퍼 용량을 초과하면 onBufferOverflow에 설정된 정책에 따라 동작
+- **onBufferOverflow : 버퍼가 가득찼을 때의 동작 정의**
+  - `BufferOverflow.SUSPEND` : 버퍼가 가득찼을 때 emit을 수행하면, emit 코드가 블로킹 된다. 버퍼가 비어야만 emit 이후의 코드가 실행된다.
+  - `BufferOverflow.DROP_OLDEST` : 버퍼가 가득찼을 때, 가장 오래된 데이터부터 버퍼에서 삭제한다. 
+  - `BufferOverflow.DROP_LATEST` : 버퍼가 가득찼을 때, 가장 최근 데이터부터 버퍼에서 삭제한다. 
+
+생성자의 기본 매개변수는 다음과 같다. 
+
+```kotlin
+public fun <T> MutableSharedFlow(
+    replay: Int = 0,
+    extraBufferCapacity: Int = 0,
+    onBufferOverflow: BufferOverflow = BufferOverflow.SUSPEND
+): MutableSharedFlow<T> 
+```
+
+기본값은 위와 같이 정의되어 있지만 실제로 내부 코드에서 (replay + extraBufferCapacity) 값이 bufferSize로 사용된다고 한다. 
 
 ### combine, map, filter 등의 연산자 사용
 
