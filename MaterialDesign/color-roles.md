@@ -14,11 +14,11 @@ Color role은 **UI 요소에 어떤 색상을 적용할지 결정**하기 위해
 
 ## General Concepts 
 
-* **Surface** : 화면의 배경이나 강조도가 낮은 넓은 영역에 사용
-* **Primary, Secondary, Tertiary** : 포그라운드 컴포넌트를 강조하거나 강조하지 않는 데 사용되는 Accent color
-* **Container** : 버튼과 같은 포그라운드 컴포넌트의 색상을 채우는 데 사용되는 컬러 (텍스트, 아이콘에 사용 X)
-* **On-** : 쌍을 이루는 부모 색상 위에 텍스트, 아이콘 색상을 지정할 때 사용
-* **-Variant** : 쌍을 이루는 non-variant 색상보다 덜 강조하고 싶을 때 사용
+* **Surface** : 화면의 **배경**이나 강조도가 낮은 **넓은 영역**에 사용
+* **Primary, Secondary, Tertiary** : **포그라운드 컴포넌트**를 강조하거나 강조하지 않는 데 사용되는 Accent color
+* **Container** : 버튼과 같은 **포그라운드 컴포넌트의 색상을 채우는 데 사용**되는 컬러 (텍스트, 아이콘에 사용 X)
+* **On-** : 쌍을 이루는 부모 색상 위에 **텍스트, 아이콘 색상**을 지정할 때 사용
+* **-Variant** : 쌍을 이루는 **non-variant 색상보다 덜 강조**하고 싶을 때 사용
 
 <img width="800" src="https://github.com/user-attachments/assets/27fa7d25-3238-4a46-bc28-87d27ac621b4"/>
 
@@ -70,7 +70,7 @@ Error color는 정적 컬러의 예시이다. 모든 dynamic color scheme에서�
 
 ## Surface 
 
-보다 중성적인 **배경** 색상, 카드, 시트, 다이얼로그 같은 **컨테이너**의 색상으로 사용 
+보다 중성적인 **배경** 색상, 또는 Card, Sheet, Dialog 같은 **컨테이너** 색상으로 사용 
 
 - **Surface** : 배경에 대한 디폴트 색상 
 - **On surface** : surface 위의 텍스트 및 아이콘 
@@ -92,7 +92,7 @@ Error color는 정적 컬러의 예시이다. 모든 dynamic color scheme에서�
 
 ### Inverse colors 
 
-Inverse color는 컴포넌트에 선택적으로 적용되어 주변 UI의 색과 반대되는 색을 구현하여 대비 효과를 만든다.
+Inverse color는 컴포넌트에 선택적으로 적용되어 **주변 UI의 색과 반대되는 색**을 구현하여 **대비 효과**를 만든다.
 
 - **Inverse surface** : 표면과 대비되는 컴포넌트의 배경 색상 
 - **Inverse on surface** : inverse surface 위의 텍스트 및 아이콘 
