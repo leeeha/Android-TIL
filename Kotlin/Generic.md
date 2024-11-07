@@ -83,7 +83,7 @@ fun main() {
 }
 ```
 
->*Error - Type mismatch: inferred type is Array<Cat> but Array<Animal> was expected*
+>*Error - Type mismatch: inferred type is Array\<Cat> but Array\<Animal> was expected*
 
 위 코드는 cats를 animals에 copy하는 코드이다.
 
@@ -102,6 +102,10 @@ fun copyFromTo(from: Array<out Animal>, to: Array<Animal>) {
     for (i in from.indices) {
         to[i] = from[i]
     }
+
+    from[0] = Cat()
+    // Error - Type mismatch: inferred type is Cat but Nothing was expected
+    // Read(O), Write(X)
 }
 
 fun main() {
@@ -145,32 +149,9 @@ public class Array<T> // 읽기, 쓰기 (O) -> Mutable
 public interface List<out E> // 읽기(O), 쓰기(X) -> Immutable
 ```
 
-out 키워드가 붙은 **List** 컬렉션은 공변성(Invariance)에 의해 값을 변경할 수 없다. **(Immutable)** 
+out 키워드가 붙은 **List** 컬렉션은 공변성에 의해 값을 변경할 수 없다. **(Immutable)** 
 
 반면에, 형식 매개변수에 아무런 키워드가 붙어 있지 않은 **Array**는 값을 변경할 수 있다. **(Mutable)** 
-
-```kotlin
-fun myAnimals(animals: Array<Animal>) {
-    // ERROR: Cat 타입에 Dog 타입을 대입할 수 없다! 
-    animals[0] = Dog() 
-}
-
-fun main() {
-    val cats: Array<Cat> = arrayOf(Cat(), Cat())
-    myAnimals(cats)
-}
-```
-
-```kotlin
-fun myAnimals(animals: List<Animal>) { 
-    println(animals[0]) // 읽기(O), 쓰기(X) 
-}
-
-fun main() {
-    val cats: List<Cat> = listOf(Cat(), Cat())
-    myAnimals(cats) 
-}
-```
 
 ## 반공변성 (Contravariance) - in 키워드
 
