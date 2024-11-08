@@ -64,7 +64,9 @@ fun main() {
 
 **단어를 변경하지 않을 때는 StringBuilder의 버퍼 공간으로 인해, 불필요하게 메모리를 낭비할 수도 있다.**
 
-**StringBuffer**는 각 메서드에 **synchronized** 키워드가 붙어있어서 **동시성 제어**가 가능하다. 
+따라서, 상황에 따라 적합한 것을 선택해서 사용해야 한다. 
+
+마지막으로 **StringBuffer**는 각 메서드에 **synchronized** 키워드가 붙어있어서 **동시성 제어**가 가능하다. 
 
 따라서, **멀티 스레드 환경에서 thread-safe 하게** 문자열 연산 작업을 수행하려면, StringBuilder 대신에 StringBuffer를 사용해야 한다. 
 
