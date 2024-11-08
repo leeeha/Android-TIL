@@ -269,7 +269,7 @@ private inline fun <reified T : Activity> navigateTo() {
 
 - **Built-in annotation**
   - 자바에 기본적으로 내장된 어노테이션
-  - @Override, @Deprecated, @SupressWarning, @NonNull @FuntionalInterface 
+  - @Override, @Deprecated, @SupressWarning, @NonNull, @FuntionalInterface 
 - **Meta annotation**
   - 다른 어노테이션을 정의하기 위해 사용되는 어노테이션 
   - @Target: 어노테이션 적용 가능한 대상을 지정한다. ex) METHOD, PARAMETER, PACKAGE 등 
