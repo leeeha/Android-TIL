@@ -3,14 +3,10 @@
 <details>
 <summary>String literal과 new String(””)의 차이를 설명해 주세요.</summary>
 
-- **String literal**
-  - String Pool에 내용이 같은 문자열이 있으면, 해당 문자열에 대한 참조 반환 (추가적인 메모리 할당 없이)
-  - 내용이 같은 문자열이 없을 때만, 새로운 String 객체 생성하여 String Pool에 저장 
-  - Java String Pool: JVM에 의해 String 객체가 저장되는 특별한 메모리 영역 
-- **new String("")**
-  - 항상 Heap 메모리 영역에 새로운 String 객체 생성하여 참조 값 반환 
+- String literal : String Constant Pool에 저장되며, 동일한 리터럴은 재사용된다. 
+- new String("") : 힙 메모리 영역에 매번 새로운 String 인스턴스를 생성한다. 
 
-일반적으로, **문자열 리터럴을 사용하는 게 메모리를 더 절약**할 수 있는 방법이다.
+따라서, **문자열 리터럴을 사용하는 게 메모리를 더 절약**할 수 있는 방법이다.
 
 ```java
 String first = "leeeha"; 
@@ -40,15 +36,19 @@ System.out.println(constantString == internedString); // true
 <details>
 <summary>String, StringBuilder, StringBuffer의 차이점에 대해서 설명해주세요.</summary>
 
-String은 메모리에 한번 할당되면 값이 변하지 않는 **불변 객체**여서 동기화를 신경쓰지 않아도 된다. 
-
-문자열을 변경하고 싶을 때는 새 String 객체를 생성하고, 참조 값을 바꾸는 방식으로 동작한다. (기존의 문자열 객체는 GC가 수거해간다.)
-
-따라서, 문자열이 변경될 때마다 메모리의 할당 및 해제가 반복되어서 **성능이 좋지 않다.** 
-
-반면에, **StringBuilder는 초기화 된 값보다 더 크게 일정한 버퍼 공간을 사용한다.** 
-
-**문자열의 변경이 자주 일어날 때**, 추가 메모리 공간을 할당하지 않고 기존의 버퍼 공간을 활용할 수 있어서 **메모리 효율적**이다. 
+- **String**
+  - 메모리에 한번 할당되면 값이 변하지 않는 **불변 객체** 
+  - 동기화를 신경쓰지 않아도 된다. 
+  - 문자열이 변경될 때마다 메모리의 할당 및 해제가 반복되어 성능이 좋지 않다. 
+- **StringBuild**
+  - 원본 문자열을 변경할 수 있는 **가변 객체** 
+  - 문자열이 변경될 때 바로 메모리를 할당하지 않고, 버퍼 공간을 먼저 활용하기 때문에 메모리 효율적이다. 
+  - 버퍼 공간에 있는 문자를 포인터로 가리키듯이 문자열 변경이 일어나므로, String보다 처리 속도가 느린 편이다.
+  - 문자열이 변경되지 않을 때는 일정한 버퍼 공간이 오히려 메모리 낭비가 될 수 있다. 
+  - 동기화 처리가 되어 있지 않다. 
+- **StringBuffer**
+  - 각 메서드가 synchronized 키워드로 **동기화 처리**되어 있어서, 멀티 스레드 환경에서 Thread-Safe하게 사용할 수 있다.
+  - 싱글 스레드 환경에서는 StringBuilder를 사용하는 게 성능이 더 좋다. 
 
 ```kotlin 
 fun main() {
@@ -58,19 +58,7 @@ fun main() {
 }
 ```
 
-단, 문자열을 변경할 때 버퍼 공간의 문자를 일종의 포인터로 가리키는 원리여서, 기존의 **String보다 처리 속도가 느린 편**이다. 
-
 <img width="400" src="https://velog.velcdn.com/images/jxlhe46/post/8ecbc62a-e51f-484b-b6b3-a2cc77d2c3cc/image.png"/>
-
-**단어를 변경하지 않을 때는 StringBuilder의 버퍼 공간으로 인해, 불필요하게 메모리를 낭비할 수도 있다.**
-
-따라서, 상황에 따라 적합한 것을 선택해서 사용해야 한다. 
-
-마지막으로 **StringBuffer**는 각 메서드에 **synchronized** 키워드가 붙어있어서 **동시성 제어**가 가능하다. 
-
-따라서, **멀티 스레드 환경에서 thread-safe 하게** 문자열 연산 작업을 수행하려면, StringBuilder 대신에 StringBuffer를 사용해야 한다. 
-
-단, StringBuffer는 동기화 처리로 성능이 낮아질 수 있으므로, 싱글 스레드 환경에서는 StringBuilder를 사용하는 게 더 좋다. 
 
 </details>
 <br>
@@ -87,14 +75,10 @@ fun main() {
 <details>
 <summary>Exception 클래스의 예시를 말해주세요.</summary>
 
-- IOException
-- FileNotFoundException
-- NullPointerException 
-- IllegalArgumentException
-- IllegalStateException
-- IndexOutOfBoundException 
-- ClassCastException 
-- ArithmeticException
+크게 Checked Exception, Unchecked Exception으로 나눌 수 있다.
+
+- Checked Exception: IOException, FileNotFoundException
+- Unchecked Exception: NullPointerException, IllegalArgumentException, IllegalStateException, IndexOutOfBoundException, ClassCastException, ArithmeticException
 
 </details>
 <br>
@@ -104,12 +88,11 @@ fun main() {
 
 - **Checked Exception**
   - Compile Exception이라고도 하며, Exception을 바로 상속 받는다.
-  - 컴파일 타임에 예외를 catch 하는지 정적으로 검사한다.
-  - 예외 처리를 따로 하지 않으면 컴파일 자체가 불가능하다. 
+  - 컴파일 단계에서 명시적으로 예외 처리를 해야 한다. 
 - **Unchecked Exception**
   - RuntimeException을 상속 받는다. 
-  - 컴파일 타임에 예외의 발생 여부를 판단할 수 없다. 
-  - 컴파일 타임에 명시적인 예외 처리를 강제하지 않는다. 
+  - 컴파일 단계에서 명시적인 예외 처리를 강제하지 않는다. 
+  - 컴파일 타임에 예외의 발생 여부를 예측할 수 없다. 
 
 <img width="600" src="https://github.com/user-attachments/assets/8eb03534-ee04-4cad-8dd3-9ea283e02370"/>
 
@@ -148,7 +131,7 @@ public class FileOutputStream {
 <details>
 <summary>try~catch~finally 구문에서 finally은 어떠한 역할을 하나요?</summary>
 
-예외가 발생하든 안하든 항상 실행되어야 하는 블록이다. close() 같은 메서드로 리소스를 해제하는 동작이 대표적이다. 
+예외가 발생하든 안하든 항상 실행되어야 하는 블록이다. close() 같은 메서드로 사용했던 자원을 해제하는 동작이 대표적이다. 
 
 </details>
 <br>
@@ -156,8 +139,8 @@ public class FileOutputStream {
 <details>
 <summary>Throwable과 Exception의 차이는 무엇인가요?</summary>
 
-- Throwable: Error, Exception에 대한 정보를 담고 있는 클래스. printStackTrace(), getMessage() 같은 디버깅에 유용한 메서드 제공 
-- Exception: Throwable을 상속 받는 하위 클래스. Error와 달리, 개발자가 미리 예측하여 방지할 수 있음. 
+- Throwable: 모든 Error, Exception에 대한 부모 클래스. printStackTrace(), getMessage() 같은 메서드 제공 
+- Exception: Error를 제외한 모든 Exception에 대한 부모 클래스
 
 </details>
 <br>
@@ -165,30 +148,19 @@ public class FileOutputStream {
 <details>
 <summary>제네릭이란 무엇이고, 왜 사용할까요?</summary>
 
-제네릭(generic)이란, **하나의 값이 여러 데이터 타입을 가질 수 있도록 하는 방법**이다. 
-
-대표적으로 ArrayList에 String, Integer 같은 타입을 지정하는 아래 코드도 제네릭을 이용한 것이다.
-
-```java
-ArrayList<Integer> list1 = new ArrayList<>();
-ArrayList<String> list2 = new ArrayList<>();
-```
-
-이처럼 제네릭은 **클래스 내부에서 타입을 지정하지 않고, 외부에서 사용자에 의해 지정된다.** 
-
-데이터의 특정(specific) 타입을 미리 지정하지 않고, 필요에 따라 외부에서 지정하는 일반화(generic) 된 타입이라고 이해할 수 있다. 
-
-제네릭의 장점은 다음과 같다. 
+제네릭(generic)이란, **데이터 타입을 일반화**하여 **코드의 재사용성**을 높이고 **타입 안정성**을 보장하는 기능이다. 
 
 - 비슷한 기능을 하는 클래스, 인터페이스, 메서드 **코드의 재사용**이 가능해진다. 
 - 제네릭에서 지정한 범위에 맞지 않는 데이터 타입이 들어오면, **컴파일 단계에서 에러가 발생**한다. 
-- 클래스 외부에서 타입을 지정할 때, 따로 타입 체크 및 변환 과정을 거치지 않아도 돼서 **관리하기 편하다.** 
+- 객체를 사용하기 전에 타입 캐스팅 과정이 불필요해서 **관리하기 편하다.** 
 
 </details>
 <br>
 
 <details>
 <summary>제네릭을 사용한 경험을 소개해 주세요.</summary>
+
+UiState.Success 데이터 클래스의 data 속성을 제네릭 타입으로 일반화하여, 코드의 재사용성을 높였습니다. 
 
 ```kotlin 
 sealed interface UiState<out T> { 
@@ -206,6 +178,8 @@ sealed interface UiState<out T> {
 }
 ```
 
+액티비티 간의 전환에 사용되는 메서드에 제네릭을 적용하여, 코드의 재사용성과 타입 안전성을 높였습니다. 
+
 ```kotlin 
 private inline fun <reified T : Activity> navigateTo() {
     Intent(this@LoginActivity, T::class.java).apply {
@@ -214,6 +188,8 @@ private inline fun <reified T : Activity> navigateTo() {
     }
 }
 ```
+
+ArrayList 대신 ArrayList<String>을 사용하여, 런타임에 발생할 수 있는 ClassCastException을 방지했습니다. 
 
 </details>
 <br>
@@ -281,6 +257,7 @@ private inline fun <reified T : Activity> navigateTo() {
   - @Native: 네이티브 메서드로 참조되는 상수 필드에 붙인다. 
 - **Custom annotation**
   - 개발자가 특정 기능을 위해 직접 정의한 어노테이션 
+  - ex) Hilt Qualifier: Interceptor -> @Auth @Log
 - **어노테이션이 저장하는 Element 개수**에 따라 Marker(0개), Single-value(1개), Full annotation(2개 이상)으로도 구분 가능 
 
 </details>
@@ -349,7 +326,9 @@ private inline fun <reified T : Activity> navigateTo() {
 
 람다, 스트림, 어노테이션
 
+- https://mangkyu.tistory.com/112
 - https://www.elancer.co.kr/blog/detail/255
 - https://velog.io/@eia51/Annotation-완전-정복기
 - https://steady-coding.tistory.com/609
 - https://systemdata.tistory.com/21
+- https://medium.com/@ans188/kotlin-reflection%EC%9D%B4%EB%9E%80-%EB%AC%B4%EC%97%87%EC%9D%BC%EA%B9%8C-f2a23b7e6fae
