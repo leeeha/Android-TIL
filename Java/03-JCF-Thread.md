@@ -225,7 +225,98 @@ Iterator 역시 인터페이스이며, 주요 메서드로는 hashNext(), next()
 <details>
 <summary>Java에서 스레드를 만드는 방법을 설명해 주세요.</summary>
 
+**1) Thread 클래스의 객체를 직접 생성하는 방법** 
 
+```java
+Thread thread = new Thread(new Runnable() {
+    @Override
+    public void run() {
+        System.out.println("작업 스레드입니다.");
+    }
+});
+```
+
+```java
+// 람다식을 이용한 방법 
+Thread thread = new Thread(() -> System.out.println("작업 스레드입니다."));
+```
+
+작업 스레드는 생성되자마자 바로 실행되지 않고, start() 메서드를 호출해야 run() 메서드의 내용이 실행된다. 
+
+```java
+public static void main(String[] args) {
+    // 작업 스레드 생성 
+    Thread thread = new Thread(() -> {
+        // run() 메서드 오버라이딩 
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+
+        // 0.5초 간격으로 비프음 발생 
+        for (int i = 0; i < 5; i++) {
+            toolkit.beep();
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) {
+                e.printStackTrace();;
+            }
+        }
+    });
+
+    // 작업 스레드 실행 
+    thread.start();
+
+    // 메인 스레드에서는 0.5초 간격으로 문자열 출력 
+    for (int i = 0; i < 5; i++) {
+        System.out.println("띵");
+        try {
+            Thread.sleep(500);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+메인 스레드와 작업 스레드가 빠르게 번갈아가며 실행되기 때문에, 동시에 실행되는 것처럼 보인다. 
+
+**2) Thread 클래스를 상속한 객체를 생성하는 방법**
+
+```java
+// 작업 스레드 정의 
+public class BeepThread extends Thread {
+    @Override
+    public void run() {
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+
+        for (int i = 0; i < 5; i++) {
+            toolkit.beep();
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) {
+                e.printStackTrace();;
+            }
+        }
+    }
+
+    // 추가 로직 작성 가능
+}
+
+public class Main {
+    public static void main(String[] args) {
+        // 메인 스레드에서 작업 스레드 생성 및 실행 
+        Thread thread = new BeepThread();
+        thread.start();
+
+        for (int i = 0; i < 5; i++) {
+            System.out.println("띵");
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
 
 </details>
 <br>
@@ -233,7 +324,11 @@ Iterator 역시 인터페이스이며, 주요 메서드로는 hashNext(), next()
 <details>
 <summary>스레드 풀이란 무엇이고, 왜 사용할까요?</summary>
 
+스레드 풀은 **미리 생성된 스레드의 집합**으로, 필요할 때마다 스레드를 새로 생성하는 대신에 스레드 풀에 있는 것을 재사용한다. 
 
+스레드를 생성하고 제거하는 데 드는 비용을 줄여서 **자원을 효율적으로 사용**하고, 프로그램 **응답성을 높여 성능을 개선**할 수 있다. 
+
+그리고 스레드를 과도하게 생성하여 메모리나 CPU 같은 자원이 부족해지거나, 시스템이 불안정해지는 문제도 개선할 수 있다. 
 
 </details>
 <br>
@@ -243,8 +338,13 @@ Iterator 역시 인터페이스이며, 주요 메서드로는 hashNext(), next()
 <details>
 <summary>스프링과 같은 프레임워크에서는 스레드 풀의 스레드 개수를 수백 개 이상으로 운영합니다. 이는 Context Switching이 일어남에도 불구하고도 이런 선택을 내린 것인데, 왜 그럴까요?</summary>
 
+현대 운영체제는 컨텍스트 스위칭이 매우 최적화 되어 있어서, 많은 스레드를 사용할 때도 효율적으로 처리할 수 있다. 
 
+그리고 많은 클라이언트의 요청을 처리해야 하는 어플리케이션의 경우, **빠른 응답 속도**를 위해 스레드 개수를 높이는 게 유리하다. 
+
+하나의 스레드가 I/O 바운드 작업(DB 쿼리, 파일 입출력, 외부 API 호출 등)을 처리하고 있을 때, 다른 스레드는 블로킹 되지 않고 다른 요청을 처리할 수 있기 때문이다. 
+
+스프링에서는 주로 ExecutorService로 스레드 풀을 구성하고, 요청이 많아지면 자동으로 스레드를 생성하거나 재사용하여 성능을 최적화한다. 따라서, 요청의 성격에 따라 유동적으로 스레드 수가 조정된다. 
 
 </details>
 <br>
-
