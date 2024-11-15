@@ -187,9 +187,9 @@ Collection은 요소들의 집합이라 생각하면 되는데, Map은 요소를
 <details>
 <summary>iterable과 iterator의 차이는 무엇인가요?</summary>
 
-Iterable 인터페이스는 iterator()라는 추상 메서드를 갖고 있으며, 이 메서드는 Iterator 타입을 반환한다. 
+Iterable 인터페이스는 **Collection의 상위 인터페이스**로, **iterator()라는 추상 메서드**를 갖고 있다. 
 
-따라서, Iterable을 구현하는 클래스들은 iterator()가 반환하는 반복자 객체를 통해 컬렉션의 요소를 순회할 수 있는 것이다. 
+Iterable을 구현하는 클래스들은 iterator() 메서드가 반환하는 **반복자 객체를 통해 컬렉션의 요소를 순회**할 수 있다. 
 
 ```java
 public interface Iterable<T> {
@@ -227,7 +227,7 @@ Iterator 역시 인터페이스이며, 주요 메서드로는 hashNext(), next()
 <details>
 <summary>Java에서 스레드를 만드는 방법을 설명해 주세요.</summary>
 
-**1) Thread 클래스의 객체를 직접 생성하는 방법** 
+**1) Thread 클래스의 객체를 직접 생성** 
 
 ```java
 Thread thread = new Thread(new Runnable() {
@@ -280,11 +280,11 @@ public static void main(String[] args) {
 
 메인 스레드와 작업 스레드가 빠르게 번갈아가며 실행되기 때문에, 동시에 실행되는 것처럼 보인다. 
 
-**2) Thread 클래스를 상속한 객체를 생성하는 방법**
+**2) Thread 클래스 상속 or Runnable 인터페이스 구현**
 
 ```java
 // 작업 스레드 정의 
-public class BeepThread extends Thread {
+public class BeepThread extends Thread { 
     @Override
     public void run() {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
@@ -306,6 +306,40 @@ public class Main {
     public static void main(String[] args) {
         // 메인 스레드에서 작업 스레드 생성 및 실행 
         Thread thread = new BeepThread();
+        thread.start();
+
+        for (int i = 0; i < 5; i++) {
+            System.out.println("띵");
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+
+```java
+public class MyRunnable implements Runnable { 
+    @Override
+    public void run() {
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+
+        for (int i = 0; i < 5; i++) {
+            toolkit.beep();
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) {
+                e.printStackTrace();;
+            }
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Thread thread = new Thread(new MyRunnable());
         thread.start();
 
         for (int i = 0; i < 5; i++) {
