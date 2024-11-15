@@ -149,7 +149,7 @@ Map 인터페이스의 구현체로는 HashMap, LinkedHashMap, TreeMap, HashTabl
 <details>
 <summary>HashMap은 어떻게 동작하나요?</summary>
 
-자바 초기 버전에 나온 HashTable 레거시 클래스를 보완하였다. 해시 테이블은 Key를 해싱해서 나온 해시 코드를 배열의 인덱스로 활용하여 Value를 찾는 방식으로 동작한다.  
+자바 초기 버전에 나온 HashTable 레거시 클래스를 보완하였다. 해시 테이블은 **Key를 해싱해서 나온 해시 코드를 배열의 인덱스로 활용하여 Value를 찾는 방식**으로 동작한다.  
 
 ![image](https://github.com/user-attachments/assets/bcee6d22-1393-4aac-bebd-85e32775c1ba)
 
