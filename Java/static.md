@@ -63,10 +63,8 @@ class Dog extends Animal {
 public class Main {
     public static void main(String[] args) {
         Animal animal = new Dog();
-        
-        // 정적 메서드는 객체 타입이 아닌, 참조하는 클래스 타입으로 호출
-        animal.staticMethod(); // Animal 클래스의 staticMethod() 호출
-        animal.instanceMethod(); // Dog 클래스의 instanceMethod() 호출 (다형성 적용)
+        animal.staticMethod();   // Static method in Animal
+        animal.instanceMethod(); // Instance method in Dog (동적 다형성)
     }
 }
 ```
@@ -81,7 +79,7 @@ public class Main {
 private static final String NAME = "leeeha";
 ```
 
-**유틸리티 클래스**는 인스턴스 변수 및 메서드를 제공하지 않고, 데이터 처리를 위한 정적 메서드만 존재하는 클래스를 말한다. 
+**유틸리티 클래스**는 인스턴스 변수 및 메서드를 제공하지 않고, **데이터 처리를 위한 정적 메서드만 존재하는 클래스**를 말한다. 
 
 대표적으로 java의 Math 클래스는 상수 외에 인스턴스 변수가 하나도 없고, 계산을 위한 정적 메서드만 제공한다. 
 
