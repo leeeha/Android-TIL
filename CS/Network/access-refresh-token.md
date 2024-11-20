@@ -32,107 +32,6 @@ JWT은 발급 이후 임의 삭제가 불가능하기 때문에, **액세스 토
 | 만료 X | 만료 O | 액세스 토큰이 유효하다는 건 이미 인증된 것이므로 바로 리프레시 토큰 재발급  |
 | 만료 O | 만료 O | 강제 로그아웃 시키고 다시 로그인 하여, 액세스, 리프레시 토큰 모두 재발급  |
 
-## OkHttp Token Interceptor
-
-[](https://www.notion.so/3647902f79bb40d9b307178ecbadc0a9?pvs=21) 
-
-```kotlin
-package org.go.sopt.winey.data.interceptor
-
-import // ...
-
-class AuthInterceptor @Inject constructor(
-    @ApplicationContext context: Context,
-    private val json: Json,
-    private val dataStoreRepository: DataStoreRepository
-) : Interceptor {
-
-    override fun intercept(chain: Interceptor.Chain): Response {        
-        val originalRequest = chain.request()
-        val headerRequest = originalRequest.newAuthBuilder().build()
-        val response = chain.proceed(headerRequest)
-
-        when (response.code) {
-            CODE_TOKEN_EXPIRED -> { 
-                try {
-                    Timber.e("액세스 토큰 만료, 토큰 재발급 합니다.")
-                    response.close()
-                    return handleTokenExpired(chain, originalRequest, headerRequest)
-                } catch (t: Throwable) {
-                    Timber.e("예외 발생 ${t.message}")
-                    saveAccessToken("", "")
-                }
-            }
-
-            CODE_INVALID_USER -> {
-                saveAccessToken("", "")
-            }
-        }
-        
-        return response
-    }
-
-    private fun handleTokenExpired(
-        chain: Interceptor.Chain,
-        originalRequest: Request,
-        headerRequest: Request
-    ): Response {
-        // 서버가 리프레시 토큰을 인증하여 액세스 토큰을 재발급 해준다. 
-        val refreshTokenRequest = originalRequest.newBuilder().post("".toRequestBody())
-            .url("$AUTH_BASE_URL/auth/token")
-            .addHeader(REFRESH_TOKEN, runBlocking(Dispatchers.IO) { getRefreshToken() })
-            .build()
-            
-        val refreshTokenResponse = chain.proceed(refreshTokenRequest)
-        if (refreshTokenResponse.isSuccessful) {
-            val responseToken = json.decodeFromString(
-                refreshTokenResponse.body?.string().toString()
-            ) as BaseResponse<ResponseReIssueTokenDto>
-            
-            // 새로 발급된 액세스, 리프레시 토큰을 데이터스토어에 저장 
-            if (responseToken.data != null) {
-                saveAccessToken(
-                    responseToken.data.accessToken,
-                    responseToken.data.refreshToken
-                )
-            }
-            refreshTokenResponse.close()
-            
-            // 새로 발급 받은 액세스 토큰을 요청 헤더에 추가 
-            val newRequest = originalRequest.newAuthBuilder().build()
-            return chain.proceed(newRequest)
-        } else {
-            refreshTokenResponse.close()
-            saveAccessToken("", "")
-            return chain.proceed(headerRequest)
-        }
-    }
-    
-    private fun Request.newAuthBuilder() =
-        this.newBuilder().addHeader(HEADER_TOKEN, runBlocking(Dispatchers.IO) { getAccessToken() })
-
-    private suspend fun getAccessToken(): String {
-        return dataStoreRepository.getAccessToken().first() ?: ""
-    }
-
-    private suspend fun getRefreshToken(): String {
-        return dataStoreRepository.getRefreshToken().first() ?: ""
-    }
-
-    private fun saveAccessToken(accessToken: String, refreshToken: String) =
-        runBlocking {
-            dataStoreRepository.saveAccessToken(accessToken, refreshToken)
-        }
-
-    companion object {
-        private const val CODE_TOKEN_EXPIRED = 401
-        private const val CODE_INVALID_USER = 404
-        private const val HEADER_TOKEN = "accessToken"
-        private const val REFRESH_TOKEN = "refreshToken"
-    }
-}
-```
-
 ## 리프레시 토큰이 만료된 경우
 
 ### 방법 1. 리프레시 토큰 만료 일주일 전, 액세스 토큰과 함께 재발급 진행
@@ -150,6 +49,48 @@ https://devtalk.kakao.com/t/refresh-token/19265
 현재 진행하고 있는 프로젝트인 위니 서버에서는 **액세스 토큰을 재발급 받을 때 리프레시 토큰도 갱신시킨다**고 한다. 
 
 그래서 액세스 토큰 재발급 받을 때 응답으로 오는 액세스, 리프레시 토큰 모두 데이터스토어에 새로 저장해줘야 한다. 
+
+### 예시 코드 
+
+```kotlin 
+class LoveMarkerAuthenticator @Inject constructor(
+    private val userPreferencesDataSource: UserPreferencesDataSource,
+    private val reissueTokenService: ReissueTokenService,
+    @ApplicationContext private val context: Context,
+) : Authenticator {
+    override fun authenticate(route: Route?, response: Response): Request? {
+        if (response.code == CODE_TOKEN_EXPIRED) {
+            val newAccessToken = runCatching {
+                runBlocking {
+                    reissueTokenService.getNewAccessToken(
+                        refreshToken = userPreferencesDataSource.userData.first().refreshToken
+                    )
+                }.data.accessToken
+            }.onSuccess { token ->
+                runBlocking {
+                    userPreferencesDataSource.updateAccessToken(token)
+                }
+            }.onFailure { throwable ->
+                Timber.e("FAIL REISSUE TOKEN: ${throwable.message}")
+                runBlocking {
+                    userPreferencesDataSource.clear()
+                }
+                ProcessPhoenix.triggerRebirth(context)
+            }.getOrThrow()
+
+            return response.request.newBuilder()
+                .header("accessToken", newAccessToken)
+                .build()
+        }
+
+        return null
+    }
+
+    companion object {
+        const val CODE_TOKEN_EXPIRED = 401
+    }
+}
+```
 
 ## 참고자료
 
