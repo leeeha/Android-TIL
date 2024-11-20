@@ -195,7 +195,7 @@ public class SynchronizedExample {
 
 따라서, **false를 반환할 때는 무한 루프를 돌려서 (다른 스레드에 의해 변경된) 메모리 값을 읽고 같은 시도를 반복하거나, 다른 더 중요한 작업이 있다면 먼저 수행**할 수 있다. 이 부분은 개발자가 정하면 된다.
 
-true를 반환할 때는 캐시 메모리의 변경된 값을 메인 메모리에도 반영하여, **가시성 문제도 해결**할 수 있다. 
+true를 반환할 때는 CPU 캐시 메모리에서 변경된 값을 메인 메모리에도 반영하여, **가시성 문제도 해결**할 수 있다. 
 
 actomic 타입은 이러한 CAS 알고리즘을 기반으로 작동하며, **blocking 방식의 synchronized에 비해 훨씬 효율적**이다. 
 
@@ -207,7 +207,9 @@ actomic 타입은 이러한 CAS 알고리즘을 기반으로 작동하며, **blo
 <details>
 <summary>Vector, Hashtable, Collections.SynchronizedXXX의 문제점은 무엇인가요?</summary>
 
+내부적으로 **모든 메서드가 synchronized 키워드로 동기화 되어 있어서 성능이 저하**될 수 있다.
 
+또한 **Vector, Hashtable은 레거시 클래스**로, 현대의 JCF에서 제공하는 다양한 기능(제네릭, 스트림 API 등)을 지원하지 않는다. 이로 인해 코드의 가독성과 타입 안전성이 떨어질 수 있다. 
 
 </details>
 <br>
@@ -215,7 +217,12 @@ actomic 타입은 이러한 CAS 알고리즘을 기반으로 작동하며, **blo
 <details>
 <summary>SynchronizedList와 CopyOnArrayList의 차이를 설명해 주세요.</summary>
 
-
+- SynchronizedList
+  - 모든 메서드에 synchronized 키워드로 동기화를 적용하므로, 읽기와 쓰기 작업 모두 성능 저하가 발생할 수 있다. 
+- CopyOnWriteArrayList
+  - 읽기 작업: 락을 사용하지 않으므로, 여러 스레드가 동시에 읽을 수 있어서 성능이 우수하다. 
+  - 쓰기 작업: 내부 배열의 복사본을 생성하여 작업하므로, 성능이 느린 편이다. 
+  - 쓰기 작업이 드물 때 사용하면 좋다. 
 
 </details>
 <br>
@@ -223,7 +230,11 @@ actomic 타입은 이러한 CAS 알고리즘을 기반으로 작동하며, **blo
 <details>
 <summary>ConcurrentHashMap의 동작 과정을 SynchronizedMap과 비교하여 설명해 주세요.</summary>
 
-
+- SynchronizedMap
+  - 모든 메서드에 synchronized 키워드로 동기화를 적용하므로, 읽기와 쓰기 작업 모두 성능 저하가 발생할 수 있다.
+- ConcurrentHashMap
+  - 읽기 작업: 락을 사용하지 않으므로, 여러 스레드가 동시에 읽을 수 있어서 성능이 우수하다.
+  - 쓰기 작업: 내부적으로 여러 세그먼트로 나눠서 락을 적용한다. 한 세그먼트에서 락이 걸려도 다른 세그먼트에 대한 접근이 가능하므로 성능이 향상된다. 
 
 </details>
 <br>
