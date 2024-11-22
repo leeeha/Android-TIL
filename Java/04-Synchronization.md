@@ -96,49 +96,8 @@ volatile 키워드를 붙인 공유 자원은 **CPU Cache Memory를 거치지 �
 - 데드락(교착 상태): 잘못된 락 사용으로 인해, 데드락이 발생할 수 있다. 데드락은 여러 스레드가 서로의 자원을 필요로 해서, 어떤 작업도 완료되지 못한 채 무한 대기 상태에 빠지는 것을 말한다.
 - 확장성 제한: 과도한 락 사용은 시스템의 확장성을 제한할 수 있다.
 
-</details>
-<br>
+**사용법**
 
-<details>
-<summary>atomic하다는 것이 무슨 의미인가요?</summary>
-
-원자적 연산 (atomic operation)은 더 이상 쪼갤 수 없는 즉, **중간에 인터럽트를 걸 수 없는 하나의 연산 단위**를 의미한다.
-
-공유 자원에 대해서는 원자적 연산을 수행하여 중간에 **컨텍스트 스위칭이 발생하지 않도록** 해야 한다. 
-
-</details>
-<br>
-
-<details>
-<summary>atomic 타입이 무엇인가요?</summary>
-
-CAS(Compare And Swap) 알고리즘 기반으로, 원자성 문제와 가시성 문제를 해결한다. non-blocking 방식이어서 synchronized 키워드보다 성능이 우수하다. 
-
-</details>
-<br>
-
-## 동시성 프로그래밍 심화
-
-<details>
-<summary>가시성 문제에 대해 조금 더 자세히 설명해 주세요. 여러 스레드가 모두 한 CPU의 캐시 메모리를 읽으면 가시성 문제가 발생하지 않을 것 같은데, 어떻게 생각하시나요?</summary>
-
-</details>
-<br>
-
-<details>
-<summary>synchronized의 문제점은 무엇이 있나요?</summary>
-
-특정 스레드가 synchronized 블록으로 lock을 걸면, 해당 블록에 접근하는 모든 스레드는 **블로킹 상태**가 되어서 아무 작업도 못한 채 **자원을 낭비**하게 된다. 
-
-또한, blocking 상태의 스레드를 **runnable 또는 running 상태로 변경하기 위해 시스템 자원이 사용**되므로, **성능 저하**로 이어질 수 있다. 
-
-이러한 문제점 때문에 논블로킹 상태로 원자성을 보장하는 방법이 atomic 키워드다. 
-
-</details>
-<br>
-
-<details>
-<summary>synchronized는 어떻게 구현되어 있나요?</summary>
 
 ```java
 // 메서드 동기화 
@@ -176,6 +135,58 @@ public class SynchronizedExample {
     }
 }
 ```
+
+</details>
+<br>
+
+<details>
+<summary>atomic하다는 것이 무슨 의미인가요?</summary>
+
+원자적 연산 (atomic operation)은 더 이상 쪼갤 수 없는 즉, **중간에 인터럽트를 걸 수 없는 하나의 연산 단위**를 의미한다.
+
+공유 자원에 대해서는 원자적 연산을 수행하여 중간에 **컨텍스트 스위칭이 발생하지 않도록** 해야 한다. 
+
+</details>
+<br>
+
+<details>
+<summary>atomic 타입이 무엇인가요?</summary>
+
+CAS(Compare And Swap) 알고리즘 기반으로, 원자성 문제와 가시성 문제를 해결한다. non-blocking 방식이어서 synchronized 키워드보다 성능이 우수하다. 
+
+</details>
+<br>
+
+## 동시성 프로그래밍 심화
+
+<details>
+<summary>가시성 문제에 대해 조금 더 자세히 설명해 주세요. 여러 스레드가 모두 한 CPU의 캐시 메모리를 읽으면 가시성 문제가 발생하지 않을 것 같은데, 어떻게 생각하시나요?</summary>
+
+스레드마다 CPU 캐시 메모리를 별도로 들고 있으므로 각 CPU 캐시 메모리 값이 항상 같을 수 없고, 동기화가 맞춰지기 전까지는 가시성 문제가 발생한다. 
+
+</details>
+<br>
+
+<details>
+<summary>synchronized의 문제점은 무엇이 있나요?</summary>
+
+특정 스레드가 synchronized 블록으로 lock을 걸면, 해당 블록에 접근하는 모든 스레드는 **블로킹 상태**가 되어서 아무 작업도 못한 채 **자원을 낭비**하게 된다. 
+
+또한, blocking 상태의 스레드를 **runnable 또는 running 상태로 변경하기 위해 시스템 자원이 사용**되므로, **성능 저하**로 이어질 수 있다. 
+
+이러한 문제점 때문에 논블로킹 상태로 원자성을 보장하는 방법이 atomic 키워드다. 
+
+</details>
+<br>
+
+<details>
+<summary>synchronized는 어떻게 구현되어 있나요?</summary>
+
+Java에서 synchronized는 **모니터**를 사용하여 구현된다. 모든 객체는 암묵적으로 모니터를 가지고 있으며, **synchronized는 해당 객체의 모니터를 잠그는 역할**을 한다.
+
+모니터는 동시성 프로그래밍에서 **스레드 간의 상호 배제**와 조건 동기화를 제공하는 고수준의 동기화 메커니즘으로, 
+
+**한 번에 하나의 스레드만 임계 구역에 접근**할 수 있게 만들어서 **데이터의 일관성을 보장**한다. 
 
 </details>
 <br>
