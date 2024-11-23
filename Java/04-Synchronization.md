@@ -266,6 +266,8 @@ public void test() {
 }
 ```
 
+Vector, Hashtable은 레거시 클래스여서 각각 ArrayList, HashMap, 동기화가 필요할 때는 ConcurrentHashMap 사용이 더 권장된다. 
+
 </details>
 <br>
 
