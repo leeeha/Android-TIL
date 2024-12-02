@@ -223,7 +223,7 @@ class OrderActivity : AppCompatActivity(), OrderView {
 
 즉, LiveData, Flow 등을 통해 **ViewModel은 Model을 업데이트** 하고, **View가 이 데이터를 구독하고 있다.**
 
-MVVM 패턴은 MVP와 마찬가지로 **M-V 사이의 의존성이 없고**, MVP처럼 **V-VM이 1:1 관계가 아닌 독립적인 관계**이기 때문에 이 둘 사이의 의존성도 없다. 
+MVVM 패턴은 MVP와 마찬가지로 **M-V 사이의 의존성이 없고**, 추가적으로 **V-VM도 1:1 관계가 아닌 독립적인 관계**이기 때문에 이 둘 사이의 의존성도 없다. 
 
 ## MVVM ViewModel vs AAC ViewModel
 
@@ -249,7 +249,7 @@ AAC에서의 ViewModel은 Android 컴포넌트의 생명 주기를 고려하여 
 
 ### 요약 
 
-둘은 서로 다른 개념이지만, AAC의 ViewModel을 이용하여 MVVM 패턴의 ViewModel을 구현할 수 있다. 
+둘은 서로 다른 개념이지만, **AAC의 ViewModel을 이용하여 MVVM 패턴의 ViewModel을 구현**할 수 있다. 
 
 MVVM 패턴에서 ViewModel의 역할은 View에 필요한 데이터를 관리하고 바인딩 해주는 것이다. AAC의 ViewModel을 이 개념대로 구현해주면 된다.
 
