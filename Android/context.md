@@ -50,6 +50,57 @@ Activity에서 Context를 가져오는 3가지 방법이 있다.
 
 추가적으로 View 클래스에도 getContext() 메서드가 있어서 Context를 가져올 수 있는데, View 객체를 생성할 때 생성자의 인자로 넣은 Context가 getContext()로 반환된다. **일반적으로 View가 속해있는 Activity의 Context가 해당 View의 Context가 된다.** 
 
+## 2025 안드로이드 탐구 영역 3번 문제 
+
+안드로이드에서 제공하는 Context로 적절하지 않은 것은?
+
+1. Application Context 
+2. Activity Context
+3. Base Context 
+4. Resource Context 
+5. Service Context 
+
+<details>
+<summary>정답은 여기서 확인!</summary>
+
+정답: 4번
+
+Resource Context는 공식적으로 정의된 Context 타입은 아니며, 리소스 작업에 사용되는 Context를 비공식적으로 지칭하는 용어이다. 
+
+보통은 Activity Context, Application Context, 또는 ContextThemeWrapper를 통해 리소스나 테마에 접근한다. 
+
+</details>
+
+<details>
+<summary>Base Context란 무엇인가?</summary>
+
+Base Context는 ContextWrapper 클래스에서 내부적으로 사용하는 Context를 의미한다. ContextWrapper는 다른 Context 객체를 감싸는 역할을 하며, Base Context는 이 **ContextWrapper가 실제 작업을 처리할 때 위임하는 Context 객체**이다. 
+
+예를 들어, **ContextWrapper 클래스를 상속 받아 커스텀 Context를 정의**하거나, **ContextThemeWrapper로 기존 Context에 테마를 적용할 때** 사용할 수 있다. 
+
+```kotlin 
+class MyCustomContext(base: Context) : ContextWrapper(base) {
+    override fun getSystemService(name: String): Any? {
+        if (name == Context.LAYOUT_INFLATER_SERVICE) {
+            // 커스텀 LayoutInflater 제공
+            return LayoutInflater.from(baseContext).cloneInContext(this)
+        }
+        return super.getSystemService(name)
+    }
+}
+```
+
+```kotlin 
+// 테마가 적용된 Context 생성
+val themedContext = ContextThemeWrapper(baseContext, R.style.CustomTheme)
+
+// 테마가 적용된 LayoutInflater로 View 생성
+val inflater = LayoutInflater.from(themedContext)
+val customView = inflater.inflate(R.layout.custom_layout, null)
+```
+
+</details>
+
 # Context 참조 시 유의사항
 
 Context 종류에 따라 생명주기가 다르기 때문에 **Activity와 분리된 작업에 Activity Context를 사용하면 예기치 못한 에러가 발생**할 수 있다. 
