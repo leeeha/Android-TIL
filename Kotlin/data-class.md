@@ -105,6 +105,8 @@ fun main() {
 
 # 2025 안드로이드 탐구 영역 9번 문제 
 
+📌 시험지 링크: https://android-exam25.gdg.kr/
+
 ```kotlin 
 data class User(val name: String, val age: Int)
 class UserTwo(val name: String, val age: Int)

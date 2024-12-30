@@ -52,6 +52,8 @@ Activity에서 Context를 가져오는 3가지 방법이 있다.
 
 ## 2025 안드로이드 탐구 영역 3번 문제 
 
+📌 시험지 링크: https://android-exam25.gdg.kr/
+
 안드로이드에서 제공하는 Context로 적절하지 않은 것은?
 
 1. Application Context 

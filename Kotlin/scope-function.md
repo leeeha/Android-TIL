@@ -156,6 +156,39 @@ class Book(author: Person) {
 
 <img width="700" src="https://github.com/user-attachments/assets/02812fac-7434-41f8-869d-226b4e49dfb1"/>
 
+# 2025 안드로이드 탐구 영역 11번 문제 
+
+📌 시험지 링크: https://android-exam25.gdg.kr/
+
+>Kotlin은 객체의 상태를 변경하거나, 특정 작업을 수행할 때 스코프 함수를 사용한다. <br>
+이 중 (A)는 수신 객체를 람다의 수신 객체로 전달, (B)는 수신 객체를 람다의 파라미터로 전달한다. 
+
+이에 대한 설명으로 옳은 것만을 보기에서 있는 대로 고른 것은? 
+
+ㄱ. run은 (A)로 적절하다. <br>
+ㄴ. (A)와 (B)는 호출된 객체를 변경할 수 없다. <br>
+ㄷ. 수신 객체가 null일 때, (B)를 '?' 연산자를 활용해 호출한다면 스코프 함수는 실행되지 않을 것이다. <br>
+ㄹ. 수신 객체가 null일 때, (A)를 '!!' 연산자를 활용해 호출한다면 'IllegalArgumentException'이 발생한다. <br>
+
+<details>
+<summary>정답은?</summary>
+
+- public inline fun <T> T.apply(block: T.() -> Unit): T 
+- public inline fun <T, R\> T.run(block: T.() -> R): R
+- public inline fun <T, R\> with(receiver: T, block: T.() -> R): R
+- public inline fun <T, R\> T.let(block: (T) -> R): R
+- public inline fun <T> T.also(block: (T) -> Unit): T 
+
+(A) apply, run, with <br>
+(B) let, also <br>
+
+**정답: ㄱ, ㄷ** 
+
+ㄴ. 호출된 객체의 프로퍼티가 var로 가변형이라면 변경할 수 있다. <br>
+ㄹ. NullPointerException이 발생한다. <br>
+
+</details>
+
 # 참고 자료
 
 - https://kotlinworld.com/255

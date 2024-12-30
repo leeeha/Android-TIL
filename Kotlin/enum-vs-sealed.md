@@ -108,6 +108,8 @@ Sealed Class/Interface는 **각 열거 상수의 타입이 모두 동일해야 �
 
 # 2025 안드로이드 탐구 영역 10번 문제 
 
+📌 시험지 링크: https://android-exam25.gdg.kr/
+
 **Kotlin 2.0 이상**에서 sealed class의 특성으로 옳은 것만을 고르시오. 
 
 ㄱ. sealed class를 상속하는 모든 하위 클래스 또한 컴파일러가 컴파일 타임에 인지할 수 있다. (F)<br>
