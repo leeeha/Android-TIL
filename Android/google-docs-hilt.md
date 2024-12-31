@@ -55,10 +55,6 @@ class ExampleActivity : AppCompatActivity() {
 
 >🚨 **참고:** Hilt가 삽입한 필드는 **private이 불가능**하다. Hilt를 사용하여 private 필드를 삽입하려고 하면 **컴파일 에러가 발생**한다.
 
-Hilt가 주입하는 클래스에는 DI를 사용하는 또 다른 기본 클래스가 있을 수 있다. 이러한 클래스는 추상적인 경우 `@AndroidEntryPoint` 어노테이션이 필요하지 않다.
-
-Android 클래스가 삽입되는 생명주기 콜백에 관한 자세한 내용은 [Component lifetimes](https://developer.android.com/training/dependency-injection/hilt-android?hl=ko#component-lifetimes)를 참고하자. 
-
 ## Hilt binding 정의
 
 **필드 주입**을 실행하려면 **Hilt가 해당 컴포넌트에서 필요한 의존성의 인스턴스를 제공하는 방법**을 알아야 한다. 
@@ -91,11 +87,11 @@ class AnalyticsAdapter @Inject constructor(
 
 Hilt 모듈은 `@Module`로 어노테이션이 지정된 클래스다. [Dagger 모듈](https://developer.android.com/training/dependency-injection/dagger-android?hl=ko#dagger-modules)과 마찬가지로 **Hilt 모듈은 특정 유형의 인스턴스를 제공하는 방법을 Hilt에 알려준다.** 
 
-그러나 Dagger 모듈과는 달리, Hilt 모듈에 `@InstallIn` 어노테이션을 지정하여 **각 모듈을 설치할 Android 클래스를 Hilt에 알려야 한다.** 
+그러나 Dagger 모듈과는 달리, Hilt 모듈에 `@InstallIn` 어노테이션을 지정하여 **모듈을 설치할 Android 클래스가 무엇인지** Hilt에 알려야 한다.
 
 Hilt 모듈에 제공하는 의존성은 **Hilt 모듈을 설치하는 Android 클래스와 연결되어 있는 모든 생성된 컴포넌트에서 사용**할 수 있다. 
 
->🚨 **참고:** Hilt 코드를 생성할 때는 Hilt를 사용하는 모든 Gradle 모듈에 접근할 수 있어야 한다. 다시 말해, `Application` 클래스를 컴파일하는 Gradle 모듈이 모든 Hilt 모듈과 생성자 주입 클래스를 가지고 있어야 Hilt가 정상적으로 관련 코드를 생성할 수 있다.
+>🚨 **참고:** Hilt 코드를 생성할 때는 Hilt를 사용하는 모든 Gradle 모듈에 접근할 수 있어야 한다. 다시 말해, `Application` 클래스를 컴파일하는 Gradle 모듈 (일반적으로 app 모듈)이 모든 Hilt 모듈과 생성자 주입 클래스를 의존성으로 포함하고 있어야 한다는 뜻이다. 
 
 ### @Binds 사용한 인터페이스 인스턴스 주입
 
@@ -110,9 +106,6 @@ class AnalyticsAdapter @Inject constructor(
 `AnalyticsService`가 인터페이스라면 이 인터페이스를 생성자 주입할 수 없다. 대신 **Hilt 모듈 내에 `@Binds`로 어노테이션이 지정된 추상 함수를 생성하여 Hilt에 바인딩 정보를 제공**할 수 있다. 
 
 `@Binds` 어노테이션은 **인터페이스의 인스턴스를 제공할 때 필요한 인터페이스 구현체**를 Hilt에 알려준다. 
-
-- 함수의 반환 타입: 함수가 어떤 인터페이스의 인스턴스를 제공하는지 Hilt에 알려준다.
-- 함수 매개변수: 인터페이스의 구현체를 Hilt에 알려준다.
 
 ```kotlin
 interface AnalyticsService {
@@ -129,22 +122,21 @@ abstract class AnalyticsModule {
 
   @Binds
   abstract fun bindAnalyticsService(
-    analyticsServiceImpl: AnalyticsServiceImpl
-  ): AnalyticsService
+    analyticsServiceImpl: AnalyticsServiceImpl 
+  ): AnalyticsService 
 }
 ```
 
-Hilt가 `AnalyticsModule`의 의존성을 `ExampleActivity`에 주입하길 원하기 때문에, Hilt 모듈 `AnalyticsModule`에 `@InstallIn(ActivityComponent.class)` 어노테이션을 지정한다. 이 어노테이션은 `AnalyticsModule`의 모든 의존성을 **앱의 모든 액티비티에서 사용할 수 있음**을 의미한다.
+- `추상 함수의 반환 타입` : 함수가 어떤 **인터페이스의 인스턴스**를 제공하는지 Hilt에 알려준다.
+- `추상 함수의 매개변수` : **인터페이스의 구현체**를 Hilt에 알려준다.
+
+Hilt가 `AnalyticsModule`의 의존성을 `ExampleActivity`에 주입하길 원하기 때문에, Hilt 모듈 `AnalyticsModule`에 `@InstallIn(ActivityComponent::class)` 어노테이션을 지정한다. 이 어노테이션은 `AnalyticsModule`의 모든 의존성을 **앱의 모든 액티비티에서 사용할 수 있음**을 의미한다.
 
 ### **@Provides 사용한 인스턴스 주입**
 
 생성자 주입이 불가능한 것은 **인터페이스**만이 아니다. **클래스가 외부 라이브러리에서 제공되어 클래스를 소유하지 않은 경우** (Retrofit, OkHttpClient, Room DB 등) 또는 **빌더 패턴으로 인스턴스를 생성해야 하는 경우**에도 생성자 주입이 불가능하다. 
 
 앞선 예시에서 `AnalyticsService` 클래스를 직접 소유하지 않으면, **Hilt 모듈 내에 함수를 생성하고 이 함수에 `@Provides` 어노테이션을 지정하여 해당 타입의 인스턴스를 제공하는 방법을 Hilt에 알려줘야 한다.** 
-
-- 함수 반환 타입: 함수가 어떤 타입의 인스턴스를 제공하는지 Hilt에 알려준다.
-- 함수 매개변수: 해당 타입의 의존성을 Hilt에 알려준다.
-- 함수 본문: 해당 타입의 인스턴스를 제공하는 방법을 Hilt에 알려준다. Hilt는 해당 인스턴스를 제공할 때마다 함수 본문을 실행한다.
 
 ```kotlin
 @Module
@@ -163,19 +155,23 @@ object AnalyticsModule {
 }
 ```
 
+- `함수 반환 타입` : 함수가 **어떤 타입의 인스턴스**를 제공하는지 Hilt에 알려준다.
+- `함수 매개변수` : 해당 타입의 **의존성**을 Hilt에 알려준다.
+- `함수 본문` : **해당 타입의 인스턴스를 제공하는 방법**을 Hilt에 알려준다. Hilt는 **해당 인스턴스를 제공할 때마다 함수 본문을 실행**한다.
+
 ### 동일한 타입에 대해 여러 바인딩 제공
 
 의존성과 동일한 타입의 다양한 구현을 제공하는 Hilt가 필요한 경우에는 Hilt에 여러 바인딩을 제공해야 한다. 이때, **한정자를 사용하여 동일한 타입에 대해 여러 바인딩을 정의**할 수 있다.
 
 `@Qualifier`는 **특정 타입에 대해 여러 바인딩이 정의되어 있을 때, 해당하는 특정 바인딩을 식별하는 데 사용하는 어노테이션**이다. 
 
-예를 들어 `AnalyticsService` 호출에 대한 응답값을 가로채고 싶을 때, [인터셉터](https://square.github.io/okhttp/interceptors/)와 함께 `OkHttpClient` 객체를 사용할 수 있다. 다른 서비스에서는 호출에 대한 응답값을 다른 방식으로 가로채야 할 수도 있다. 이 경우에는 서로 다른 두 가지 `OkHttpClient` 구현을 제공하는 방법을 Hilt에 알려줘야 한다. 
+예를 들어 `AnalyticsService` 호출에 대한 응답값을 가로채고 싶을 때, [인터셉터](https://square.github.io/okhttp/interceptors/)와 함께 `OkHttpClient` 객체를 사용할 수 있다. 다른 서비스에서는 호출에 대한 응답값을 다른 방식으로 가로채야 할 수도 있다. 이 경우에는 **서로 다른 두 가지 `OkHttpClient` 구현을 제공하는 방법**을 Hilt에 알려줘야 한다. 
 
-먼저 다음과 같이 `@Binds` 또는 `@Provides` 메서드에 어노테이션을 지정하는 데 사용할 한정자를 정의한다. 
+먼저 다음과 같이 `@Binds` 또는 `@Provides` 메서드에 어노테이션을 지정하는 데 사용할 **한정자를 정의**한다. 
 
 ```kotlin
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
+@Qualifier // 여러 구현체 중에 특정 구현으로 바인딩하기 위해 사용 
+@Retention(AnnotationRetention.BINARY) // 어노테이션의 유지 기간 설정 
 annotation class AuthInterceptorOkHttpClient
 
 @Qualifier
@@ -183,7 +179,18 @@ annotation class AuthInterceptorOkHttpClient
 annotation class OtherInterceptorOkHttpClient
 ```
 
-그런 다음, **Hilt는 각 한정자와 일치하는 타입의 인스턴스를 제공하는 방법을 알아야 한다.** 이 경우에는 `@Provides`와 함께 Hilt 모듈을 사용할 수 있다. **두 메서드 모두 동일한 반환 타입을 갖지만, 한정자는 다음과 같이 두 가지의 서로 다른 바인딩으로 메서드에 라벨을 지정한다.** 
+<details>
+<summary>AnnotationRetention이란?</summary>
+
+소스 코드 상에서 **어노테이션의 유지 기간을 설정**할 때 사용한다. 
+
+- SOURCE: 컴파일 타임에만 유지되고, 바이트코드나 런타임에는 포함 X
+- BINARY: 바이트 코드에는 포함되지만, 런타임에는 포함 X 
+- RUNTIME: 런타임에도 어노테이션 포함 (런타임 리플렉션이 필요할 때 사용)
+
+</details>
+
+그런 다음, Hilt는 **각 한정자와 일치하는 타입의 인스턴스를 제공**하는 방법을 알아야 한다. 이 경우에는 `@Provides`와 함께 Hilt 모듈을 사용할 수 있다. 두 메서드 **모두 동일한 반환 타입**을 갖지만, 한정자는 다음과 같이 두 가지의 **서로 다른 바인딩으로 메서드에 라벨을 지정**한다. 
 
 ```kotlin
 @Module
@@ -250,7 +257,7 @@ class ExampleActivity: AppCompatActivity() {
 
 ### Hilt에 미리 정의된 한정자
 
-Hilt는 몇 가지 미리 정의된 한정자를 제공한다. 예를 들어, 어플리케이션 또는 액티비티의 `Context` 클래스가 필요할 수 있으므로, Hilt는 `@ApplicationContext` 및 `@ActivityContext` 한정자를 제공한다. 
+Hilt는 몇 가지 미리 정의된 한정자를 제공한다. 예를 들어, **어플리케이션 또는 액티비티의 `Context` 클래스**가 필요할 수 있으므로, Hilt는 `@ApplicationContext` 및 `@ActivityContext` 한정자를 제공한다. 
 
 앞선 예시에서 `AnalyticsAdapter` 클래스에 액티비티 컨텍스트가 필요하다고 가정해보자. 다음 코드는 `AnalyticsAdapter`에 액티비티 컨텍스트를 제공하는 방법을 보여준다. 
 
@@ -263,7 +270,7 @@ class AnalyticsAdapter @Inject constructor(
 
 ## Android 클래스용으로 생성된 컴포넌트
 
-필드 주입을 수행할 수 있는 각 안드로이드 클래스에는 `@InstallIn` 어노테이션에서 참조할 수 있는 연관된 Hilt 컴포넌트가 있다. **각 Hilt 컴포넌트는 해당 안드로이드 클래스에 바인딩을 주입하는 역할을 담당한다.** 
+필드 주입을 수행할 수 있는 각 안드로이드 클래스에는 **`@InstallIn` 어노테이션에서 참조할 수 있는 연관된 Hilt 컴포넌트**가 있다. 각 Hilt 컴포넌트는 **해당 안드로이드 클래스에 바인딩을 주입하는 역할**을 담당한다.
 
 Hilt는 다음과 같은 컴포넌트를 제공한다. 
 
@@ -307,7 +314,7 @@ class AnalyticsAdapter @Inject constructor(
 
 ![image](https://github.com/user-attachments/assets/246efcc5-7ba4-448d-8139-52d15b447a24)
 
-아래 예시에서 `@ActivityScoped`를 사용하여 `AnalyticsAdapter`의 범위를 `ActivityComponent`로 지정하면, Hilt는 해당 액티비티의 생명주기 동안 동일한 `AnalyticsAdapter` 인스턴스를 제공한다. 
+아래 예시에서 `@ActivityScoped`를 사용하여 `AnalyticsAdapter`의 범위를 `ActivityComponent`로 지정하면, Hilt는 **해당 액티비티의 생명주기 동안 동일한 `AnalyticsAdapter` 인스턴스를 제공**한다. 
 
 ```kotlin
 @ActivityScoped
@@ -316,12 +323,13 @@ class AnalyticsAdapter @Inject constructor(
 ) { ... }
 ```
 
->🚨 **참고:** 제공된 객체는 컴포넌트가 제거될 때까지 메모리에 남아 있기 때문에, 바인딩의 범위를 컴포넌트로 지정하면 많은 비용이 들 수 있다. 따라서 어플리케이션에서 컴포넌트로 범위가 지정된 바인딩은 최소한으로 사용하는 것이 좋다.<br>
-다만, 특정 범위 내에서 동일한 인스턴스를 사용해야 하는 바인딩, 동기화가 필요한 바인딩, 만드는 데 비용이 많이 드는 바인딩에는 특정 컴포넌트로 범위를 지정하는 것이 적절하다.
+>🚨 **참고:** 제공된 객체는 컴포넌트가 제거될 때까지 메모리에 남아 있기 때문에, **바인딩의 범위를 컴포넌트로 지정하면 많은 비용**이 들 수 있다. 따라서 어플리케이션에서 컴포넌트로 범위가 지정된 바인딩은 **최소한으로 사용**하는 것이 좋다. 다만, **특정 범위 내에서 동일한 인스턴스를 사용**해야 하는 바인딩, **동기화가 필요**한 바인딩, **만드는 데 비용이 많이 드는** 바인딩에는 **특정 컴포넌트로 범위를 지정**하는 것이 적절하다.
 
-`AnalyticsService`에 `ExampleActivity`뿐만 아니라 **앱의 모든 위치에서 매번 동일한 인스턴스를 사용해야 하는** 내부 상태가 있다고 가정해보자. 이럴 때는 `AnalyticsService`의 범위를 `SingletonComponent`로 지정하는 것이 적절하다. 결과적으로, 컴포넌트는 `AnalyticsService`의 인스턴스를 제공해야 할 때마다 매번 동일한 인스턴스를 제공한다.
+`AnalyticsService`에 `ExampleActivity`뿐만 아니라 **앱의 모든 위치에서 매번 동일한 인스턴스를 사용해야 하는 내부 상태**가 있다고 가정해보자. 이럴 때는 `AnalyticsService`의 범위를 `SingletonComponent`로 지정하는 것이 적절하다. 결과적으로, 컴포넌트는 `AnalyticsService`의 인스턴스를 제공해야 할 때마다 **매번 동일한 인스턴스를 제공**한다.
 
-다음 예에서는 Hilt 모듈에서 바인딩의 범위를 컴포넌트로 지정하는 방법을 보여준다. **바인딩의 범위는 바인딩이 설치된 컴포넌트의 범위와 일치해야 하므로**, 이 예에서는 `ActivityComponent` 대신 `SingletonComponent`에 `AnalyticsService`를 설치해야 한다. 
+다음 예에서는 Hilt 모듈에서 바인딩의 범위를 컴포넌트로 지정하는 방법을 보여준다. 
+
+⭐️ 바인딩의 범위는 **바인딩이 설치된 컴포넌트의 범위와 일치**해야 하므로, 이 예에서는 `ActivityComponent` 대신 `SingletonComponent`에 `AnalyticsService`를 설치해야 한다. 
 
 ```kotlin
 // If AnalyticsService is an interface.
@@ -329,8 +337,6 @@ class AnalyticsAdapter @Inject constructor(
 @InstallIn(SingletonComponent::class)
 abstract class AnalyticsModule {
 
-  // SingletonComponent 범위와 일치하도록 
-  // @Singleton으로 지정 
   @Singleton
   @Binds
   abstract fun bindAnalyticsService(
@@ -360,7 +366,7 @@ Hilt 컴포넌트 범위에 관한 자세한 내용은 [이 블로그](https://
 
 ### **Component hierarchy**
 
-컴포넌트에 모듈을 설치하면 **해당 컴포넌트의 다른 바인딩 또는 컴포넌트 계층 구조에서 그 아래 하위 컴포넌트의 의존성으로 해당 바인딩에 접근**할 수 있다. 
+컴포넌트에 모듈을 설치하면 **해당 컴포넌트의 다른 바인딩** 또는 컴포넌트 계층 구조에서 **그 아래 하위 컴포넌트의 의존성**으로 해당 바인딩에 접근할 수 있다. 
 
 <img width="650" alt="스크린샷 2024-08-06 오후 6 46 58" src="https://github.com/user-attachments/assets/c6e27083-a87f-4e0d-a609-48edabbfd586">
 
@@ -368,7 +374,11 @@ Hilt 컴포넌트 범위에 관한 자세한 내용은 [이 블로그](https://
 
 ### **Component default bindings**
 
-**각 Hilt 컴포넌트에는 기본 바인딩 세트가 제공되며, 이 바인딩을 사용자 지정 바인딩에 의존성으로 주입할 수 있다.** 이러한 디폴트 바인딩은 **액티비티, 프래그먼트 같은 일반 타입에 해당**하며, 특정 하위 클래스에는 해당되지 않는다. 이는 Hilt가 모든 액티비티를 주입할 때 하나의 `ActivityComponent` 정의를 사용하기 때문이다. 그리고 각 액티비티는 해당 컴포넌트에 대한 서로 다른 인스턴스를 가진다. 
+각 Hilt 컴포넌트에는 **기본 바인딩 세트**가 제공되며, 이 바인딩을 **사용자 지정 바인딩에 의존성으로 주입**할 수 있다. 
+
+이러한 바인딩은 특정 하위 클래스가 아닌, **일반적인 액티비티 또는 프래그먼트 타입에 해당한다**는 점에 유의해야 한다. 
+
+이는 Hilt가 단일 액티비티 컴포넌트 정의를 사용하여 모든 액티비티를 주입하기 때문이다. 그리고 각 액티비티는 이 컴포넌트의 서로 다른 인스턴스를 갖게 된다. 
 
 ![image](https://github.com/user-attachments/assets/2e5e6669-de81-415c-aba7-2727e3a783f1)
 
@@ -402,9 +412,9 @@ class AnalyticsAdapter @Inject constructor(
 
 Hilt는 가장 일반적인 안드로이드 클래스를 지원한다. 하지만 Hilt가 지원하지 않는 클래스에서 필드 주입을 수행해야 할 수도 있다. 
 
-이러한 경우 `@EntryPoint` 어노테이션을 사용하여 진입점을 만들 수 있다. 진입점은 **Hilt에서 관리하는 코드와 그렇지 않은 코드 사이의 경계**이다. **Hilt가 관리하는 객체 그래프에 코드가 처음 들어오는 지점**이다. 진입점을 통해 Hilt는 의존성 그래프 내에서 의존성을 제공하기 위해 Hilt가 관리하지 않는 코드를 사용할 수 있다. 
+이러한 경우 `@EntryPoint` 어노테이션을 사용하여 진입점을 만들 수 있다. 진입점은 **Hilt에서 관리하는 코드와 그렇지 않은 코드 사이의 경계**이자, **Hilt가 관리하는 객체 그래프에 코드가 처음 들어오는 지점**이다. 
 
-예를 들어, **Hilt는 콘텐츠 프로바이더를 직접 지원하지 않는다.** 콘텐츠 프로바이더가 Hilt를 사용하여 일부 의존성을 가져오도록 하려면, 원하는 각 바인딩 타입에 대해 `@EntryPoint`로 어노테이션이 달린 인터페이스를 정의하고 한정자를 포함해야 한다. 이후 `@InstallIn`을 추가하여 다음과 같이 진입점을 설치할 컴포넌트를 지정하면 된다. 
+예를 들어, **Hilt는 콘텐츠 프로바이더를 직접 지원하지 않는다.** 콘텐츠 프로바이더가 Hilt를 사용하여 일부 의존성을 가져오도록 하려면, 원하는 각 바인딩 타입에 대해 `@EntryPoint`로 어노테이션이 달린 **인터페이스를 정의하고 한정자를 포함**해야 한다. 이후 `@InstallIn`을 추가하여 다음과 같이 **진입점을 설치할 컴포넌트를 지정**하면 된다. 
 
 ```kotlin
 class ExampleContentProvider : ContentProvider() {
@@ -419,9 +429,9 @@ class ExampleContentProvider : ContentProvider() {
 }
 ```
 
-엔트리 포인트에 액세스하려면 `EntryPointAccessors`의 적절한 정적 메서드를 사용하면 된다. 매개변수는 컴포넌트 인스턴스 또는 컴포넌트 홀더 역할을 하는 `@AndroidEntryPoint` 객체여야 한다.
+엔트리 포인트에 액세스하려면 **`EntryPointAccessors`의 적절한 정적 메서드를 사용**하면 된다. 매개변수는 컴포넌트 인스턴스 또는 컴포넌트 홀더 역할을 하는 `@AndroidEntryPoint` 객체여야 한다.
 
-매개변수로 전달하는 컴포넌트와 `EntryPointAccessors` 정적 메서드가 모두 `@EntryPoint` 인터페이스의 `@InstallIn` 어노테이션에 있는 Android 클래스와 일치하는지 확인한다. 
+매개변수로 전달하는 컴포넌트와 `EntryPointAccessors` 정적 메서드가 모두 `@EntryPoint` 인터페이스의 **`@InstallIn` 어노테이션에 있는 Android 클래스와 일치하는지** 확인한다. 
 
 ```kotlin
 class ExampleContentProvider: ContentProvider() {
@@ -442,7 +452,7 @@ class ExampleContentProvider: ContentProvider() {
 
 ## Hilt, Dagger
 
-**Hilt는 Dagger 의존성 주입 라이브러리 위에 구축되어 Dagger를 Android 어플리케이션에 통합하는 표준적인 방법을 제공한다.** 
+Hilt는 Dagger 의존성 주입 라이브러리 위에 구축되어 **Dagger를 Android 어플리케이션에 통합하는 표준적인 방법을 제공**한다.
 
 Dagger와 관련하여 Hilt의 목표는 다음과 같다.
 
