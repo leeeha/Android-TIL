@@ -250,9 +250,9 @@ suspend fun apiCall2(num: Int): Int {
 - job1 객체의 await 함수가 반환하는 값을 apiCall2 함수에 넣어서 실행
 - 총 실행 시간 2초 이상
 
-`async` 함수와 관련해 한 가지 주의할 점은 `CoroutineStart.LAZY` 옵션을 사용해 코루틴을 지연 실행시키면 
+`async` 함수와 관련해 한 가지 주의할 점은 `CoroutineStart.LAZY` 옵션을 사용해 코루틴을 **지연 실행**시키면 
 
-`await` 함수 호출 시 계산 결과를 계속해서 기다린다는 것이다. 
+`await` 함수 호출 시 **계산 결과를 계속해서 기다린다**는 것이다. 
 
 ```kotlin
 fun main(): Unit = runBlocking {
@@ -281,7 +281,7 @@ suspend fun apiCall2(): Int {
 [main @coroutine#1] 소요 시간: 2024 ms
 ```
 
-만약 지연 코루틴을 async와 함께 사용하는 경우에도 동시에 api 호출을 하고 싶다면, start 함수를 먼저 사용해야 한다. 
+만약 **지연 코루틴**을 async와 함께 사용하는 경우에도 **동시에 api 호출**을 하고 싶다면, **start 함수를 먼저 사용**해야 한다. 
 
 ```kotlin
 fun main(): Unit = runBlocking {
