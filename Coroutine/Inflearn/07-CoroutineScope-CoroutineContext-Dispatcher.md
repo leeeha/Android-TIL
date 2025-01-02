@@ -63,50 +63,7 @@ suspend fun main() {
 }
 ```
 
-### GlobalScope 사용이 지양되는 이유 
-
-- **어플리케이션의 생명주기와 일치**: 특정 컨텍스트 (뷰모델, 액티비티, 프래그먼트 등)가 사라져도 코루틴은 계속 실행되어 메모리 누수나 에러 발생으로 이어질 수 있음.  
-- **구조적 동시성에 위배**: 부모 코루틴이 취소되어도 자식 코루틴이 취소되지 않는 문제 발생
-- **테스트 및 디버깅의 어려움**: 전역적으로 코루틴이 실행되어, 문제 발생의 원인을 찾기 어려움.
-
-# CoroutineContext
-
-이 CoroutineScope의 주요한 역할은 **CoroutineContext라는 데이터를 보관하는 것**이다. 실제 CoroutineScope 인터페이스 역시 매우 단순하다. 
-
-```kotlin
-public interface CoroutineScope {
-  public val coroutineContext: CoroutineContext
-}
-```
-
-**CoroutineContext는 코루틴과 관련된 여러 데이터를 가지고 있다.** 현재 코루틴의 이름, CoroutineExceptionHandler, 코루틴 그 자체 (Job), CoroutineDispatcher 등의 데이터를 예로 들 수 있다. 
-
-Dispatcher는 **코루틴이 어떤 스레드에 배정될지 관리하는 역할**을 한다. Dispatcher의 종류에 대해서는 잠시 후 다시 살펴보자. 
-
-이제까지의 내용을 요약하면 다음과 같다. 
-
-- **CoroutineScope: 코루틴이 탄생할 수 있는 영역**
-- **CoroutineContext: 코루틴과 관련된 데이터를 보관하고 있음.**
-
-# 구조적 동시성의 기반
-
-우리가 부모, 자식 코루틴이라고 불렀던 것도 한 영역 안에서 코루틴이 생기는 것을 의미하는데 그림과 함께 이해해보자. 
-
-<img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/663e6696-dca8-4f9e-9e75-992581f6ae94"/>
-
-위의 그림처럼 최초의 한 영역에 부모 코루틴이 있다고 가정하자. 
-
-이때 CoroutineContext에는 이름, Dispatchers.Default, 부모 코루틴 그 자체가 들어있다. 
-
-이 상황에서 부모 코루틴에서 자식 코루틴을 만들면 다음과 같을 것이다. 
-
-<img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/65897b39-e35c-4cf9-8e43-fc9b3d3dd504"/>
-
-**자식 코루틴은 부모 코루틴과 같은 영역에서 생성되고, 부모 코루틴의 Context를 복사해 적절히 내용을 덮어씌운 새로운 Context를 만든다.** 이 과정에서 부모, 자식 관계도 설정해준다. 
-
-이 원리가 바로 이전 시간에 살펴봤던 **구조적 동시성을 작동시킬 수 있는 기반**이 되는 것이다. 
-
-# 클래스 내부에서 독립적인 CoroutineScope 관리
+### 클래스 내부에서 독립적인 CoroutineScope 관리
 
 한 영역에 있는 코루틴들은 **영역 자체를 cancel() 시킴으로써 모든 코루틴을 종료**시킬 수 있다. 
 
@@ -137,7 +94,50 @@ asyncLogic.doSomething()
 asyncLogic.destroy() // 필요 없어지면 모두 정리
 ```
 
-# CoroutineContext 내부 구조
+### GlobalScope 사용이 지양되는 이유 
+
+- **어플리케이션의 생명주기와 일치**: 특정 컨텍스트 (뷰모델, 액티비티, 프래그먼트 등)가 사라져도 코루틴은 계속 실행되어 메모리 누수나 에러 발생으로 이어질 수 있음.  
+- **구조적 동시성에 위배**: 부모 코루틴이 취소되어도 자식 코루틴이 취소되지 않는 문제 발생
+- **테스트 및 디버깅의 어려움**: 전역적으로 코루틴이 실행되어, 문제 발생의 원인을 찾기 어려움.
+
+# CoroutineContext
+
+이 CoroutineScope의 주요한 역할은 **CoroutineContext라는 데이터를 보관하는 것**이다. 실제 CoroutineScope 인터페이스 역시 매우 단순하다. 
+
+```kotlin
+public interface CoroutineScope {
+  public val coroutineContext: CoroutineContext
+}
+```
+
+**CoroutineContext는 코루틴과 관련된 여러 데이터를 가지고 있다.** 현재 코루틴의 이름, CoroutineExceptionHandler, 코루틴 그 자체 (Job), CoroutineDispatcher 등의 데이터를 예로 들 수 있다. 
+
+Dispatcher는 **코루틴이 어떤 스레드에 배정될지 관리하는 역할**을 한다. Dispatcher의 종류에 대해서는 잠시 후 다시 살펴보자. 
+
+이제까지의 내용을 요약하면 다음과 같다. 
+
+- **CoroutineScope: 코루틴이 탄생할 수 있는 영역**
+- **CoroutineContext: 코루틴과 관련된 데이터를 보관하고 있음.**
+
+## 구조적 동시성의 기반
+
+우리가 부모, 자식 코루틴이라고 불렀던 것도 한 영역 안에서 코루틴이 생기는 것을 의미하는데 그림과 함께 이해해보자. 
+
+<img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/663e6696-dca8-4f9e-9e75-992581f6ae94"/>
+
+위의 그림처럼 최초의 한 영역에 부모 코루틴이 있다고 가정하자. 
+
+이때 CoroutineContext에는 이름, Dispatchers.Default, 부모 코루틴 그 자체가 들어있다. 
+
+이 상황에서 부모 코루틴에서 자식 코루틴을 만들면 다음과 같을 것이다. 
+
+<img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/65897b39-e35c-4cf9-8e43-fc9b3d3dd504"/>
+
+**자식 코루틴은 부모 코루틴과 같은 영역에서 생성되고, 부모 코루틴의 Context를 복사해 적절히 내용을 덮어씌운 새로운 Context를 만든다.** 이 과정에서 부모, 자식 관계도 설정해준다. 
+
+이 원리가 바로 이전 시간에 살펴봤던 **구조적 동시성을 작동시킬 수 있는 기반**이 되는 것이다. 
+
+## CoroutineContext 내부 구조
 
 CoroutineContext는 **Map과 Set을 합쳐놓은 자료구조**와 같다. CoroutineContext에 저장되는 데이터는 **key-value**로 이루어져 있고, Set과 비슷하게 **동일한 key를 가진 데이터는 하나만 존재**할 수 있다. 
 
