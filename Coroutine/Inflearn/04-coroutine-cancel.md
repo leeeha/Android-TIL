@@ -171,7 +171,7 @@ while(isActive){
 코루틴이 취소에 협조하게 만드는 방법은 다음 2가지가 있다. 
 
 1. kotlinx.coroutines 패키지의 suspend 함수 호출 
-2. 코루틴이 isActivie로 스스로의 상태를 확인하여 CancellationException 던지기 
+2. 코루틴이 isActive로 스스로의 상태를 확인하여 CancellationException 던지기 
 
 ## CancellationException
 
