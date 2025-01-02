@@ -34,7 +34,7 @@ Broadcast Receiver, Content Provider는 ContextWrapper를 상속 받지 않는�
 - **Application**: 싱글톤으로 어플리케이션 객체가 생성될 때 함께 Application Context가 생성되기 때문에, Application Context는 **동일한 앱에서 항상 동일한 인스턴스를 반환**한다.
 - **Activity, Service**: 액티비티나 서비스가 생성될 때마다 **각자의 Context 인스턴스가 생성**된다.
 - **Broadcast Receiver**: 자기 자신이 Context는 아니다. 리시버가 브로드캐스트를 처리할 때마다 **Context를 onReceive() 메서드의 인자로 받아서 사용**한다. 전달 받은 Context의 생명주기를 따르기 때문에, Activity Context로 브로드캐스트 실행 시, 액티비티가 종료되면 브로드캐스트 리시버도 함께 종료된다.
-- **Content Provider**: 자기 자신이 Context는 아니다. 각 앱마다 고유한 Application Context를 사용한다. 하지만 같은 앱 내에서는 동일한 Context 객체를 공유하기 때문에 싱글톤 Context로 동작한다. 
+- **Content Provider**: 자기 자신이 Context는 아니다. **각 앱마다 고유한 Application Context를 사용**한다. 하지만 같은 앱 내에서는 동일한 Context 객체를 공유하기 때문에 싱글톤 Context로 동작한다. 
 
 # Context 참조 방법
 
