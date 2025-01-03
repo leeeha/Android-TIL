@@ -163,7 +163,7 @@ public interface Element : CoroutineContext {
 }
 ```
 
-+ 기호를 이용해 여러 Element를 합치거나, **Context에 Element를 추가**할 수 있다. 
+`+` 연산자로 여러 Element를 합치거나, **Context에 Element를 추가**할 수 있다. 
 
 ```kotlin
 // + 기호를 이용한 Element 합성 
@@ -173,7 +173,7 @@ CoroutineName("나만의 코루틴") + SupervisorJob()
 coroutineContext + CoroutineName("나만의 코루틴")
 ```
 
-minusKey() 함수를 이용해 **Context에서 Element를 제거**할 수도 있다. 
+**minusKey() 함수**를 이용해 **Context에서 Element를 제거**할 수도 있다. 
 
 ```kotlin
 coroutineContext.minusKey(CoroutineName.key)
