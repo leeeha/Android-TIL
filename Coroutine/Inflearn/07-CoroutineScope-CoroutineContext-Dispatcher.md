@@ -139,9 +139,31 @@ Dispatcher는 **코루틴이 어떤 스레드에 배정될지 관리하는 역�
 
 ## CoroutineContext 내부 구조
 
-CoroutineContext는 **Map과 Set을 합쳐놓은 자료구조**와 같다. CoroutineContext에 저장되는 데이터는 **key-value**로 이루어져 있고, Set과 비슷하게 **동일한 key를 가진 데이터는 하나만 존재**할 수 있다. 
+CoroutineContext는 **Map과 Set을 합쳐놓은 자료구조**와 같다. CoroutineContext에 저장되는 데이터는 **key-value**로 이루어져 있고, Set과 비슷하게 **동일한 key를 가진 데이터는 하나만 존재**할 수 있다. CoroutineContext는 key-value 쌍을 **Element** 타입으로 정의한다. 
 
-이러한 **key-value 하나를 Element**라 부르고, + 기호를 이용해 각 Element를 합치거나 Context에 Element를 추가할 수도 있다. 
+```kotlin 
+/**
+* An element of the [CoroutineContext]. An element of the coroutine context is a singleton context by itself.
+*/
+public interface Element : CoroutineContext {
+	/**
+	* A key of this coroutine context element.
+	*/
+	public val key: Key<*>
+
+	public override operator fun <E : Element> get(key: Key<E>): E? =
+		@Suppress("UNCHECKED_CAST")
+		if (this.key == key) this as E else null
+
+	public override fun <R> fold(initial: R, operation: (R, Element) -> R): R =
+		operation(initial, this)
+
+	public override fun minusKey(key: Key<*>): CoroutineContext =
+		if (this.key == key) EmptyCoroutineContext else this
+}
+```
+
++ 기호를 이용해 여러 Element를 합치거나, **Context에 Element를 추가**할 수 있다. 
 
 ```kotlin
 // + 기호를 이용한 Element 합성 
@@ -151,7 +173,7 @@ CoroutineName("나만의 코루틴") + SupervisorJob()
 coroutineContext + CoroutineName("나만의 코루틴")
 ```
 
-만약 Context에서 Element를 제거하고 싶다면, **minusKey 함수를 이용해 제거**할 수도 있다. 
+minusKey() 함수를 이용해 **Context에서 Element를 제거**할 수도 있다. 
 
 ```kotlin
 coroutineContext.minusKey(CoroutineName.key)
