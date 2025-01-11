@@ -94,7 +94,7 @@ asyncLogic.doSomething()
 asyncLogic.destroy() // 필요 없어지면 모두 정리
 ```
 
-## GlobalScope 사용이 지양되는 이유 
+## 참고: GlobalScope 사용이 지양되는 이유 
 
 - **어플리케이션의 생명주기와 일치**: 특정 컨텍스트 (뷰모델, 액티비티, 프래그먼트 등)가 사라져도 코루틴은 계속 실행되어 메모리 누수나 에러 발생으로 이어질 수 있음.  
 - **구조적 동시성에 위배**: 부모 코루틴이 취소되어도 자식 코루틴이 취소되지 않는 문제 발생
@@ -137,7 +137,7 @@ Dispatcher는 **코루틴이 어떤 스레드에 배정될지 관리하는 역�
 
 이 원리가 바로 이전 시간에 살펴봤던 **구조적 동시성을 작동시킬 수 있는 기반**이 되는 것이다. 
 
-## CoroutineContext 내부 구조
+## CoroutineContext 내부 구조 
 
 CoroutineContext는 **Map과 Set을 합쳐놓은 자료구조**와 같다. CoroutineContext에 저장되는 데이터는 **key-value**로 이루어져 있고, Set과 비슷하게 **동일한 key를 가진 데이터는 하나만 존재**할 수 있다. CoroutineContext는 key-value 쌍을 **Element** 타입으로 정의한다. 
 
@@ -163,20 +163,96 @@ public interface Element : CoroutineContext {
 }
 ```
 
-`+` 연산자로 여러 Element를 합치거나, **Context에 Element를 추가**할 수 있다. 
+### CoroutineContext 생성 
 
-```kotlin
-// + 기호를 이용한 Element 합성 
-CoroutineName("나만의 코루틴") + SupervisorJob() 
+CoroutineContext 인터페이스에 정의된 `+` 연산자를 통해 다음과 같이 CoroutineContext를 생성할 수 있다.
 
-// Context에 Element 추가 
-coroutineContext + CoroutineName("나만의 코루틴")
+```kotlin 
+import kotlinx.coroutines.*
+
+fun main() = runBlocking {
+    val coroutineContext = CoroutineName("MyCoroutine1") + SupervisorJob() + Dispatchers.IO
+    println(coroutineContext) // [CoroutineName(MyCoroutine1), SupervisorJobImpl{Active}@136432db, Dispatchers.IO]
+}
 ```
 
-**minusKey() 함수**를 이용해 **Context에서 Element를 제거**할 수도 있다. 
+CoroutineName, CoroutineDispatcher, Job 내부 코드를 살펴보면 결국 모두 CoroutineContext 타입이므로, 위와 같이 `+` 연산자로 합칠 수 있는 것이다.  
+
+```kotlin 
+public data class CoroutineName(
+    val name: String
+) : AbstractCoroutineContextElement(CoroutineName)
+```
 
 ```kotlin
-coroutineContext.minusKey(CoroutineName.key)
+public abstract class CoroutineDispatcher :
+    AbstractCoroutineContextElement(ContinuationInterceptor), ContinuationInterceptor
+```
+
+```kotlin 
+/**
+ * Base class for [CoroutineContext.Element] implementations.
+ */
+@SinceKotlin("1.3")
+public abstract class AbstractCoroutineContextElement(public override val key: Key<*>) : Element
+```
+
+```kotlin 
+public interface Job : CoroutineContext.Element
+```
+
+### CoroutineContext 원소에 접근 
+
+key 값을 기준으로 다음과 같이 value에 접근할 수 있다. 
+
+```kotlin 
+import kotlinx.coroutines.*
+
+fun main() = runBlocking {
+    val coroutineName = CoroutineName("MyCoroutine")
+    val dispatcher = Dispatchers.IO
+    val coroutineContext = coroutineName + dispatcher
+
+    println(coroutineContext[CoroutineName]) // CoroutineName("MyCoroutine")
+    println(coroutineContext[CoroutineName.Key]) // CoroutineName("MyCoroutine")
+
+    println(coroutineContext[coroutineName.key]) // CoroutineName("MyCoroutine")
+    println(coroutineContext[dispatcher.key]) // Dispatchers.IO
+}
+```
+
+### CoroutineContext 덮어씌우기 
+
+```kotlin
+import kotlinx.coroutines.*
+
+fun main() = runBlocking {
+    val coroutineContext1 = CoroutineName("MyCoroutine1") + newSingleThreadContext("MyThread1")
+    val coroutineContext2 = CoroutineName("MyCoroutine2") + newSingleThreadContext("MyThread2")
+    val combinedCoroutineContext = coroutineContext1 + coroutineContext2
+
+    println(coroutineContext1.hashCode()) // -131117045
+    println(coroutineContext2.hashCode()) // 1408865477
+    println(combinedCoroutineContext.hashCode()) // 1408865477
+}
+```
+
+코루틴 1은 코루틴 2에 의해 덮어씌워진다. (가장 마지막에 더해진 값만 취한다.)
+
+### CoroutineContext에서 원소 제거 
+
+minusKey 메서드로 CoroutineContext에서 특정 원소를 제거할 수 있다. 
+
+```kotlin
+import kotlinx.coroutines.*
+
+fun main() = runBlocking {
+    val coroutineContext = CoroutineName("MyCoroutine") + Dispatchers.IO + Job()
+    val deletedCoroutineContext = coroutineContext.minusKey(CoroutineName)
+
+    println(coroutineContext) // [CoroutineName(MyCoroutine), JobImpl{Active}@136432db, Dispatchers.IO]
+    println(deletedCoroutineContext) // [JobImpl{Active}@136432db, Dispatchers.IO]
+}
 ```
 
 # Dispatcher
