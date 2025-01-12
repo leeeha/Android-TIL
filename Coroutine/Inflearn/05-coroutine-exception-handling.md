@@ -224,9 +224,7 @@ state machine으로 표현하면 다음과 같다.
 
 <img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/66a34080-5584-4a90-bda6-b64b071969fc"/>
 
-위의 그림에서 Completing, Completed 상태로 나뉘는 이유는 무엇일까??
-
-다음 글에서 알아보도록 하자~!
+위의 그림에서 Completing, Completed 상태로 나뉘는 이유는 무엇일까? 다음 글에서 알아보도록 하자! 
 
 # 참고 자료 
 
