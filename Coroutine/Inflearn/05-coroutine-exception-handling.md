@@ -1,7 +1,3 @@
->📌 현재 폴더에 작성한 모든 내용의 출처는 아래 인프런 강의임을 밝혀둡니다. 
->
->[2시간으로 끝내는 코루틴, 최태현 ](https://www.inflearn.com/course/2%EC%8B%9C%EA%B0%84%EC%9C%BC%EB%A1%9C-%EB%81%9D%EB%82%B4%EB%8A%94-%EC%BD%94%EB%A3%A8%ED%8B%B4)
-
 # 코루틴의 예외 처리
 
 ## 부모 코루틴, 자식 코루틴
@@ -223,3 +219,7 @@ state machine으로 표현하면 다음과 같다.
 위의 그림에서 Completing, Completed 상태로 나뉘는 이유는 무엇일까??
 
 다음 글에서 알아보도록 하자~!
+
+# 참고 자료 
+
+- [2시간으로 끝내는 코루틴, 최태현](https://www.inflearn.com/course/2%EC%8B%9C%EA%B0%84%EC%9C%BC%EB%A1%9C-%EB%81%9D%EB%82%B4%EB%8A%94-%EC%BD%94%EB%A3%A8%ED%8B%B4)

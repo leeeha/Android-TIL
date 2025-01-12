@@ -1,6 +1,4 @@
->📌 현재 폴더에 작성한 모든 내용의 출처는 아래 인프런 강의임을 밝혀둡니다. 
->
->[2시간으로 끝내는 코루틴, 최태현 ](https://www.inflearn.com/course/2%EC%8B%9C%EA%B0%84%EC%9C%BC%EB%A1%9C-%EB%81%9D%EB%82%B4%EB%8A%94-%EC%BD%94%EB%A3%A8%ED%8B%B4)
+# Continuation 
 
 코루틴이 **어떻게 특정 지점에서 중단도 하고 재개도 하는지 그 내부적인 동작 원리**를 예제와 함께 알아보자! 
 
@@ -532,3 +530,7 @@ public interface Continuation<in T> {
     public fun resumeWith(result: Result<T>)
 }
 ```
+
+# 참고 자료 
+
+- [2시간으로 끝내는 코루틴, 최태현](https://www.inflearn.com/course/2%EC%8B%9C%EA%B0%84%EC%9C%BC%EB%A1%9C-%EB%81%9D%EB%82%B4%EB%8A%94-%EC%BD%94%EB%A3%A8%ED%8B%B4)

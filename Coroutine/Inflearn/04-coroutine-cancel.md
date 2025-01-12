@@ -1,7 +1,3 @@
->📌 현재 폴더에 작성한 모든 내용의 출처는 아래 인프런 강의임을 밝혀둡니다. 
->
->[2시간으로 끝내는 코루틴, 최태현 ](https://www.inflearn.com/course/2%EC%8B%9C%EA%B0%84%EC%9C%BC%EB%A1%9C-%EB%81%9D%EB%82%B4%EB%8A%94-%EC%BD%94%EB%A3%A8%ED%8B%B4)
-
 # 코루틴의 취소 
 
 더 이상 사용하지 않는 코루틴을 취소하는 것은 중요하다. 특히 여러 코루틴을 사용할 때, **필요 없어진 코루틴을 적절하게 취소해야 컴퓨터 자원을 절약**할 수 있다. 
@@ -223,3 +219,7 @@ fun main(): Unit = runBlocking {
 // 실행 결과 
 // [main @coroutine#1] 취소 시작 
 ```
+
+# 참고 자료 
+
+- [2시간으로 끝내는 코루틴, 최태현](https://www.inflearn.com/course/2%EC%8B%9C%EA%B0%84%EC%9C%BC%EB%A1%9C-%EB%81%9D%EB%82%B4%EB%8A%94-%EC%BD%94%EB%A3%A8%ED%8B%B4)

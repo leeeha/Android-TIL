@@ -1,7 +1,3 @@
->📌 현재 폴더에 작성한 모든 내용의 출처는 아래 인프런 강의임을 밝혀둡니다. 
->
->[2시간으로 끝내는 코루틴, 최태현 ](https://www.inflearn.com/course/2%EC%8B%9C%EA%B0%84%EC%9C%BC%EB%A1%9C-%EB%81%9D%EB%82%B4%EB%8A%94-%EC%BD%94%EB%A3%A8%ED%8B%B4)
-
 # Job의 생명주기
 
 <img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/31f5afad-c07e-4764-9c1b-ac6416dfc4db"/>
@@ -47,3 +43,8 @@ fun main(): Unit = runBlocking {
 - 자식 코루틴에서 예외가 발생할 경우, 구조적 동시성에 의해 부모 코루틴이 취소되고 부모 코루틴의 다른 자식 코루틴들도 취소된다.
 - 자식 코루틴에서 예외가 발생하지 않더라도, 부모 코루틴이 취소되면 자식 코루틴들도 취소된다.
 - 다만 CancellationException의 경우 정상적인 취소로 간주하므로, 부모 코루틴에게 전파되지 않고 다른 자식 코루틴을 취소시키지 않는다.
+
+# 참고 자료 
+
+- [2시간으로 끝내는 코루틴, 최태현](https://www.inflearn.com/course/2%EC%8B%9C%EA%B0%84%EC%9C%BC%EB%A1%9C-%EB%81%9D%EB%82%B4%EB%8A%94-%EC%BD%94%EB%A3%A8%ED%8B%B4)
+- https://velog.io/@sdhong0609/부모-코루틴과-자식-코루틴-상속되지-않는-Job

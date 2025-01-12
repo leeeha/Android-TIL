@@ -1,7 +1,3 @@
->📌 현재 폴더에 작성한 모든 내용의 출처는 아래 인프런 강의임을 밝혀둡니다. 
->
->[2시간으로 끝내는 코루틴, 최태현 ](https://www.inflearn.com/course/2%EC%8B%9C%EA%B0%84%EC%9C%BC%EB%A1%9C-%EB%81%9D%EB%82%B4%EB%8A%94-%EC%BD%94%EB%A3%A8%ED%8B%B4)
-
 # suspend 함수란?
 
 함수 앞에 suspend 키워드가 붙으면 **다른 suspend 함수를 호출할 수 있는 능력**이 생긴다. 
@@ -208,3 +204,7 @@ fun main(): Unit = runBlocking {
 // Exception in thread "main" kotlinx.coroutines.TimeoutCancellationException: 
 // Timed out waiting for 1000 ms
 ```
+
+# 참고 자료 
+
+- [2시간으로 끝내는 코루틴, 최태현 ](https://www.inflearn.com/course/2%EC%8B%9C%EA%B0%84%EC%9C%BC%EB%A1%9C-%EB%81%9D%EB%82%B4%EB%8A%94-%EC%BD%94%EB%A3%A8%ED%8B%B4)

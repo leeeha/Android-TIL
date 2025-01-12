@@ -1,7 +1,3 @@
->📌 현재 폴더에 작성한 모든 내용의 출처는 아래 인프런 강의임을 밝혀둡니다. 
->
->[2시간으로 끝내는 코루틴, 최태현 ](https://www.inflearn.com/course/2%EC%8B%9C%EA%B0%84%EC%9C%BC%EB%A1%9C-%EB%81%9D%EB%82%B4%EB%8A%94-%EC%BD%94%EB%A3%A8%ED%8B%B4)
-
 # CoroutineScope
 
 이전 글에서 CoroutineScope를 이미 활용한 적이 있다. 바로 **루트 코루틴을 만들기 위해 CoroutineScope을 이용해 새로운 영역을 만들고** launch로 코루틴을 생성했다. 
@@ -330,3 +326,9 @@ fun main() {
 - CoroutineScope로 새로운 영역을 만들 때, 스레드 풀을 디스패처로 변환하여 적용한 다음 launch 블록 안에서 새로운 코루틴을 만든다.
 - 그러면 **해당 코루틴은 우리가 만든 스레드 풀에 배정하여 실행**시킬 수 있다.
 - 이 방법을 이용하면 손쉽게 스레드 풀을 만들어서 **여러 코루틴을 해당 스레드 풀에서 돌릴 수 있게 된다.**
+
+# 참고 자료 
+
+- [2시간으로 끝내는 코루틴, 최태현](https://www.inflearn.com/course/2%EC%8B%9C%EA%B0%84%EC%9C%BC%EB%A1%9C-%EB%81%9D%EB%82%B4%EB%8A%94-%EC%BD%94%EB%A3%A8%ED%8B%B4)
+- https://velog.io/@sdhong0609/CoroutineContext란
+
