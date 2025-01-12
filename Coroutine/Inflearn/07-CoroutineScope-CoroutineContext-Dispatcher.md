@@ -267,7 +267,7 @@ fun main() = runBlocking {
 }
 ```
 
-## 구조적 동시성의 기반
+## CoroutineContext의 상속 
 
 우리가 부모, 자식 코루틴이라고 불렀던 것도 한 영역 안에서 코루틴이 생기는 것을 의미하는데 그림과 함께 이해해보자. 
 
@@ -281,9 +281,47 @@ fun main() = runBlocking {
 
 <img width="700" src="https://github.com/leeeha/Android-TIL/assets/68090939/65897b39-e35c-4cf9-8e43-fc9b3d3dd504"/>
 
-**자식 코루틴은 부모 코루틴과 같은 영역에서 생성되고, 부모 코루틴의 Context를 복사해 적절히 내용을 덮어씌운 새로운 Context를 만든다.** 이 과정에서 부모, 자식 관계도 설정해준다. 
+자식 코루틴은 부모 코루틴과 같은 영역에서 생성되고, **부모 코루틴의 Context를 복사해 적절히 내용을 덮어씌운 새로운 Context를 만든다.** 이 과정에서 **부모, 자식 관계도 설정**해준다. 
 
-이 원리가 바로 이전 시간에 살펴봤던 **구조적 동시성을 작동시킬 수 있는 기반**이 되는 것이다. 
+이 원리가 바로 이전 시간에 살펴봤던 구조적 동시성을 작동시킬 수 있는 기반이 되는 것이다. 
+
+여기서 한 가지 퀴즈! **자식 코루틴은 부모 코루틴의 CoroutineContext를 전부 상속 받을까?** 정답은..... No! 
+
+자식 코루틴은 부모 코루틴으로부터 주요 구성요소인 CoroutineName, CoroutineDispatcher, CoroutineExceptionHandler를 상속 받는다. 그러나, **Job은 상속 받지 않는다.** 
+
+```kotlin 
+import kotlinx.coroutines.*
+
+fun main() = runBlocking<Unit> { // 부모 코루틴
+    val parentJob = coroutineContext[Job]
+
+    launch { // 자식 코루틴
+        val childJob = coroutineContext[Job]
+        println(parentJob === childJob) // false 
+    }
+}
+```
+
+Job 객체로 코루틴을 제어할 수 있는데, 이를 부모 코루틴으로부터 상속 받으면 **개별 코루틴의 제어가 어려워진다.** 그래서 launch, async 같은 코루틴 빌더 함수는 Job 객체를 새로 생성한다. 
+
+## 구조적 동시성의 기반이 되는 Job 
+
+부모 코루틴과 자식 코루틴은 각각 독립적인 Job 객체를 갖지만, 서로 아무런 관계가 없는 것은 아니다. **Job 객체는 코루틴을 구조화하는 데 사용**된다.
+
+```kotlin 
+public interface Job : CoroutineContext.Element {
+    // ...
+    @ExperimentalCoroutinesApi
+    public val parent: Job?
+    // ...
+    public val children: Sequence<Job>
+    // ...
+}
+```
+
+부모 코루틴의 Job 객체는 children 프로퍼티를 통해 자식 코루틴의 Job 객체를 참조하고, 자식 코루틴 Job 객체는 parent 프로퍼티를 통해 부모 코루틴의 Job 객체를 참조한다. 
+
+루트 코루틴은 부모가 없기 때문에 parent 프로퍼티는 `Job?` 타입이며, 부모 코루틴은 여러 개의 자식 코루틴을 가질 수 있으므로 `Sequence<Job>` 타입이다. 
 
 # Dispatcher
 
@@ -331,4 +369,4 @@ fun main() {
 
 - [2시간으로 끝내는 코루틴, 최태현](https://www.inflearn.com/course/2%EC%8B%9C%EA%B0%84%EC%9C%BC%EB%A1%9C-%EB%81%9D%EB%82%B4%EB%8A%94-%EC%BD%94%EB%A3%A8%ED%8B%B4)
 - https://velog.io/@sdhong0609/CoroutineContext란
-
+- https://velog.io/@sdhong0609/부모-코루틴과-자식-코루틴-상속되지-않는-Job

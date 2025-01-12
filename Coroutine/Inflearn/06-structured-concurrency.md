@@ -48,5 +48,4 @@ fun main(): Unit = runBlocking {
 # 참고 자료 
 
 - [2시간으로 끝내는 코루틴, 최태현](https://www.inflearn.com/course/2%EC%8B%9C%EA%B0%84%EC%9C%BC%EB%A1%9C-%EB%81%9D%EB%82%B4%EB%8A%94-%EC%BD%94%EB%A3%A8%ED%8B%B4)
-- https://velog.io/@sdhong0609/부모-코루틴과-자식-코루틴-상속되지-않는-Job
 - https://velog.io/@sdhong0609/코루틴의-예외-전파
