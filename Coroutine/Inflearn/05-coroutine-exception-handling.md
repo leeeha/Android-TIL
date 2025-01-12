@@ -173,7 +173,7 @@ fun main(): Unit = runBlocking {
 
 위의 코드처럼 발생한 예외를 잡아 코루틴이 취소되지 않게 만들 수도 있고, 적절한 처리 후에 다시 예외를 던질 수도 있다. 
 
-만약 try-catch 대신에 예외가 발생한 이후 **에러를 로깅하거나 에러 메시지를 보내는 등의 공통된 로직을 처리**하고 싶다면, `CoroutineExceptionHandler` 라는 객체를 활용할 수도 있다. 
+만약 try-catch 대신에 예외가 발생한 이후 **에러를 로깅하거나 일관적으로 예외 처리**를 하고 싶은 경우, `CoroutineExceptionHandler` 라는 객체를 활용할 수도 있다. 
 
 `CoroutineExceptionHandler` 객체는 코루틴의 구성요소와 발생한 예외를 파라미터로 받을 수 있다.
 
@@ -195,7 +195,15 @@ fun main(): Unit = runBlocking {
 // [DefaultDispatcher-worker-1 @coroutine#2] 예외
 ```
 
-다만, `CoroutineExceptionHandler`는 **launch에만 적용 가능**하고, **부모 코루틴이 있으면 동작하지 않는다**는 걸 주의해야 한다. 
+다만, `CoroutineExceptionHandler`는 launch와 같이 **결과 값을 반환하지 않는 코루틴 빌더에서만 동작**하며, async에서는 동작하지 않는다. 
+
+async는 Deferred 타입으로 결과 값을 반환하므로, try-catch 블록으로 예외를 직접 처리해야 한다. 
+
+또한, `CoroutineExceptionHandler`는 **루트 코루틴일 때만 동작한다**는 것도 주의해야 한다. 
+
+부모-자식 관계에서 **자식 코루틴의 예외는 기본적으로 부모로 전파**되기 때문에, CoroutineExceptionHandler는 루트 코루틴일 때만 동작한다. 
+
+예외적으로, SupervisorJob으로 자식 코루틴의 예외가 부모로 전파되지 않게 제한하면, 자식 코루틴에서도 CoroutineExceptionHandler를 사용할 수 있다. 
 
 ## 코루틴의 취소 vs 예외
 
@@ -206,7 +214,7 @@ fun main(): Unit = runBlocking {
 1. 발생한 예외가 `CancellationException` 인 경우 → 취소로 간주하고 부모 코루틴에게 전파 X
 2. 다른 예외가 발생한 경우 → 실패로 간주하고 부모 코루틴에게 전파 O 
     
-그리고 코루틴은 예외가 발생하면, 해당 예외가 `CancellationException` 이든 다른 종류의 예외든 내부적으로 “취소됨 상태"로 간주한다. 
+그리고 코루틴은 예외가 발생하면, 해당 예외가 `CancellationException` 이든 다른 종류의 예외든 내부적으로 `CANCELLING` 상태로 간주한다. 
 
 state machine으로 표현하면 다음과 같다. 
 
