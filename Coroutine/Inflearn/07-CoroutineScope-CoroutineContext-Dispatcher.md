@@ -110,14 +110,166 @@ public interface CoroutineScope {
 }
 ```
 
-**CoroutineContext는 코루틴과 관련된 여러 데이터를 가지고 있다.** 현재 코루틴의 이름, CoroutineExceptionHandler, 코루틴 그 자체 (Job), CoroutineDispatcher 등의 데이터를 예로 들 수 있다. 
+CoroutineContext는 **코루틴의 실행 환경 정보를 갖고 있는 인터페이스**로, 주요 구성 요소로는 CoroutineName, CoroutineDispatcher, Job, CoroutineExceptionHandler 이렇게 네가지가 있다. 
 
 Dispatcher는 **코루틴이 어떤 스레드에 배정될지 관리하는 역할**을 한다. Dispatcher의 종류에 대해서는 잠시 후 다시 살펴보자. 
 
 이제까지의 내용을 요약하면 다음과 같다. 
 
 - **CoroutineScope: 코루틴이 탄생할 수 있는 영역**
-- **CoroutineContext: 코루틴과 관련된 데이터를 보관하고 있음.**
+- **CoroutineContext: 코루틴의 실행 환경 정보를 갖고 있음.**
+
+## CoroutineContext 내부 구조 
+
+```kotlin 
+/**
+ * Persistent context for the coroutine. It is an indexed set of [Element] instances.
+ * An indexed set is a mix between a set and a map.
+ * Every element in this set has a unique [Key].
+ */
+@SinceKotlin("1.3")
+public interface CoroutineContext {
+    // ...
+    
+    /**
+     * An element of the [CoroutineContext]. An element of the coroutine context is a singleton context by itself.
+     */
+    public interface Element : CoroutineContext {
+        /**
+         * A key of this coroutine context element.
+         */
+        public val key: Key<*>
+
+        public override operator fun <E : Element> get(key: Key<E>): E? =
+            @Suppress("UNCHECKED_CAST")
+            if (this.key == key) this as E else null
+
+        public override fun <R> fold(initial: R, operation: (R, Element) -> R): R =
+            operation(initial, this)
+
+        public override fun minusKey(key: Key<*>): CoroutineContext =
+            if (this.key == key) EmptyCoroutineContext else this
+    }
+}
+```
+
+CoroutineContext의 구현체를 살펴보면, Element 인스턴스들에 대한 indexed set라고 설명되어 있다. 
+
+추가적으로 indexed set은 **set과 map을 혼합한 형태**이며, 이 **set의 모든 요소는 고유한 Key를 가진다**고 설명되어 있다.
+
+즉, CoroutineContext 객체는 **Key-Value 쌍으로 구성 요소를 관리**하며, 동일한 키에 대해 중복 값을 허용하지 않는다. 만약 동일한 키에 대한 새로운 값을 추가하면 **기존에 존재하던 값은 새로운 값으로 덮어씌워진다.** 
+
+따라서 CoroutineContext 객체는 CoroutineName, CoroutineDispatcher, Job, CoroutineExceptionHandler 객체를 각각 **한 개씩만** 가질 수 있다. 
+
+### CoroutineContext 구성 요소의 Key는 싱글톤 객체 
+
+```kotlin 
+public data class CoroutineName(
+    /**
+     * User-defined coroutine name.
+     */
+    val name: String
+) : AbstractCoroutineContextElement(CoroutineName) {
+    /**
+     * Key for [CoroutineName] instance in the coroutine context.
+     */
+    public companion object Key : CoroutineContext.Key<CoroutineName>
+
+    /**
+     * Returns a string representation of the object.
+     */
+    override fun toString(): String = "CoroutineName($name)"
+}
+```
+
+예시로 CoroutineContext의 구성요소 중 하나인 CoroutineName을 보면, **Key가 companion object로 선언되어 있으므로 싱글톤 객체**라는 것을 알 수 있다. 즉, **서로 다른 코루틴 컨텍스트 인스턴스여도 Key 값은 동일**하다. 
+
+```kotlin 
+import kotlinx.coroutines.*
+
+fun main() = runBlocking {
+    val coroutineName1 = CoroutineName("Coroutine1")
+    val coroutineName2 = CoroutineName("Coroutine2")
+
+    println(coroutineName1.key === coroutineName2.key) // true
+    println(Dispatchers.IO.key === Dispatchers.Default.key) // true
+}
+```
+
+key 프로퍼티는 companion object로 선언된 Key와 동일한 객체를 가리킨다. 서로 다른 CoroutineName이어도 두 객체의 Key는 동일하다는 걸 확인할 수 있다. 
+
+마찬가지로 서로 다른 Dispatcher여도 Key는 싱글톤 객체로 하나이다. 
+
+### 구성 요소 조합 
+
+CoroutineName, CoroutineDispatcher, Job, CoroutineExceptionHandler와 같이 CoroutineContext의 구성 요소들은 아래 코드처럼 모두 Element 인터페이스를 구현하고 있다. 
+
+따라서, CoroutineContext에 정의된 plus() 함수로 여러 구성 요소를 조합하여 새로운 CoroutineContext를 생성할 수 있다. 
+
+```kotlin 
+/**
+ * Base class for [CoroutineContext.Element] implementations.
+ */
+@SinceKotlin("1.3")
+public abstract class AbstractCoroutineContextElement(public override val key: Key<*>) : Element
+```
+
+```kotlin 
+public data class CoroutineName(
+    val name: String
+) : AbstractCoroutineContextElement(CoroutineName)
+```
+
+```kotlin
+public abstract class CoroutineDispatcher :
+    AbstractCoroutineContextElement(ContinuationInterceptor), ContinuationInterceptor
+```
+
+```kotlin 
+public interface Job : CoroutineContext.Element
+```
+
+```kotlin 
+public interface CoroutineExceptionHandler : CoroutineContext.Element
+```
+
+```kotlin 
+public operator fun plus(context: CoroutineContext): CoroutineContext
+```
+
+앞서 CoroutineContext는 CoroutineName, CoroutineDispatcher, Job, CoroutineExceptionHandler 객체를 **각각 한 개씩만 가질 수 있다**고 했다. 
+
+즉, **기존의 CoroutineContext 객체에 동일한 구성 요소가 추가되면, 이전의 구성 요소는 새로운 구성 요소에 의해 덮어씌워진다.** 
+
+```kotlin 
+import kotlinx.coroutines.*
+import kotlin.coroutines.EmptyCoroutineContext
+
+fun main() = runBlocking<Unit> {
+    val coroutineContext = Dispatchers.IO + CoroutineName("OldCoroutine")
+    launch(coroutineContext + CoroutineName("NewCoroutine") + EmptyCoroutineContext) {
+        println(Thread.currentThread().name)
+    }
+}
+```
+
+위 코드의 실행 결과는 `DefaultDispatcher-worker-1 @NewCoroutine#2` 이다. CoroutineName 외의 다른 구성 요소에도 동일한 원리가 적용된다. 
+
+### CoroutineContext에서 구성 요소 제거 
+
+minusKey() 메서드를 이용해 CoroutineContext에서 특정 구성 요소를 제거할 수도 있다. 
+
+```kotlin
+import kotlinx.coroutines.*
+
+fun main() = runBlocking {
+    val coroutineContext = CoroutineName("MyCoroutine") + Dispatchers.IO + Job()
+    val deletedCoroutineContext = coroutineContext.minusKey(CoroutineName.Key)
+
+    println(coroutineContext) // [CoroutineName(MyCoroutine), JobImpl{Active}@136432db, Dispatchers.IO]
+    println(deletedCoroutineContext) // [JobImpl{Active}@136432db, Dispatchers.IO]
+}
+```
 
 ## 구조적 동시성의 기반
 
@@ -136,124 +288,6 @@ Dispatcher는 **코루틴이 어떤 스레드에 배정될지 관리하는 역�
 **자식 코루틴은 부모 코루틴과 같은 영역에서 생성되고, 부모 코루틴의 Context를 복사해 적절히 내용을 덮어씌운 새로운 Context를 만든다.** 이 과정에서 부모, 자식 관계도 설정해준다. 
 
 이 원리가 바로 이전 시간에 살펴봤던 **구조적 동시성을 작동시킬 수 있는 기반**이 되는 것이다. 
-
-## CoroutineContext 내부 구조 
-
-CoroutineContext는 **Map과 Set을 합쳐놓은 자료구조**와 같다. CoroutineContext에 저장되는 데이터는 **key-value**로 이루어져 있고, Set과 비슷하게 **동일한 key를 가진 데이터는 하나만 존재**할 수 있다. CoroutineContext는 key-value 쌍을 **Element** 타입으로 정의한다. 
-
-```kotlin 
-/**
-* An element of the [CoroutineContext]. An element of the coroutine context is a singleton context by itself.
-*/
-public interface Element : CoroutineContext {
-	/**
-	* A key of this coroutine context element.
-	*/
-	public val key: Key<*>
-
-	public override operator fun <E : Element> get(key: Key<E>): E? =
-		@Suppress("UNCHECKED_CAST")
-		if (this.key == key) this as E else null
-
-	public override fun <R> fold(initial: R, operation: (R, Element) -> R): R =
-		operation(initial, this)
-
-	public override fun minusKey(key: Key<*>): CoroutineContext =
-		if (this.key == key) EmptyCoroutineContext else this
-}
-```
-
-### CoroutineContext 생성 
-
-CoroutineContext 인터페이스에 정의된 `+` 연산자를 통해 다음과 같이 CoroutineContext를 생성할 수 있다.
-
-```kotlin 
-import kotlinx.coroutines.*
-
-fun main() = runBlocking {
-    val coroutineContext = CoroutineName("MyCoroutine1") + SupervisorJob() + Dispatchers.IO
-    println(coroutineContext) // [CoroutineName(MyCoroutine1), SupervisorJobImpl{Active}@136432db, Dispatchers.IO]
-}
-```
-
-CoroutineName, CoroutineDispatcher, Job 내부 코드를 살펴보면 결국 모두 CoroutineContext 타입이므로, 위와 같이 `+` 연산자로 합칠 수 있는 것이다.  
-
-```kotlin 
-public data class CoroutineName(
-    val name: String
-) : AbstractCoroutineContextElement(CoroutineName)
-```
-
-```kotlin
-public abstract class CoroutineDispatcher :
-    AbstractCoroutineContextElement(ContinuationInterceptor), ContinuationInterceptor
-```
-
-```kotlin 
-/**
- * Base class for [CoroutineContext.Element] implementations.
- */
-@SinceKotlin("1.3")
-public abstract class AbstractCoroutineContextElement(public override val key: Key<*>) : Element
-```
-
-```kotlin 
-public interface Job : CoroutineContext.Element
-```
-
-### CoroutineContext 원소에 접근 
-
-key 값을 기준으로 다음과 같이 value에 접근할 수 있다. 
-
-```kotlin 
-import kotlinx.coroutines.*
-
-fun main() = runBlocking {
-    val coroutineName = CoroutineName("MyCoroutine")
-    val dispatcher = Dispatchers.IO
-    val coroutineContext = coroutineName + dispatcher
-
-    println(coroutineContext[CoroutineName]) // CoroutineName("MyCoroutine")
-    println(coroutineContext[CoroutineName.Key]) // CoroutineName("MyCoroutine")
-
-    println(coroutineContext[coroutineName.key]) // CoroutineName("MyCoroutine")
-    println(coroutineContext[dispatcher.key]) // Dispatchers.IO
-}
-```
-
-### CoroutineContext 덮어씌우기 
-
-```kotlin
-import kotlinx.coroutines.*
-
-fun main() = runBlocking {
-    val coroutineContext1 = CoroutineName("MyCoroutine1") + newSingleThreadContext("MyThread1")
-    val coroutineContext2 = CoroutineName("MyCoroutine2") + newSingleThreadContext("MyThread2")
-    val combinedCoroutineContext = coroutineContext1 + coroutineContext2
-
-    println(coroutineContext1.hashCode()) // -131117045
-    println(coroutineContext2.hashCode()) // 1408865477
-    println(combinedCoroutineContext.hashCode()) // 1408865477
-}
-```
-
-코루틴 1은 코루틴 2에 의해 덮어씌워진다. (가장 마지막에 더해진 값만 취한다.)
-
-### CoroutineContext에서 원소 제거 
-
-minusKey 메서드로 CoroutineContext에서 특정 원소를 제거할 수 있다. 
-
-```kotlin
-import kotlinx.coroutines.*
-
-fun main() = runBlocking {
-    val coroutineContext = CoroutineName("MyCoroutine") + Dispatchers.IO + Job()
-    val deletedCoroutineContext = coroutineContext.minusKey(CoroutineName)
-
-    println(coroutineContext) // [CoroutineName(MyCoroutine), JobImpl{Active}@136432db, Dispatchers.IO]
-    println(deletedCoroutineContext) // [JobImpl{Active}@136432db, Dispatchers.IO]
-}
-```
 
 # Dispatcher
 
