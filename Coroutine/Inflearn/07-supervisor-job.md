@@ -81,8 +81,7 @@ Exception in thread "main" java.lang.Exception: 예외 발생
 
 ## 구조적 동시성을 깨는 방법 
 
-**CoroutineContext에 새로운 Job 객체를 전달하여 독립적인 코루틴을 생성**하면, 구조적 동시성이 깨지게 된다. 즉, 부모-자식 관계가 더 이상 성립하지 않는다. 이를 통해 부모-자식 간의 예외 전파를 제한할 수 있다. 
-
+**CoroutineContext에 새로운 Job 객체를 전달하여 독립적인 코루틴을 생성**하면, 구조적 동시성이 깨지게 된다. 즉, 부모-자식 관계가 더 이상 성립하지 않으므로, 부모 방향으로의 **예외 전파를 제한**할 수 있다. 
 ```kotlin 
 import kotlinx.coroutines.*
 
@@ -135,7 +134,7 @@ Exception in thread "main @coroutine#3" java.lang.Exception: 5번 코루틴 예�
 
 3번은 새로운 Job 객체를 기반으로 독립적인 코루틴을 생성했기 때문에, 위와 같은 실행 결과가 나온다. 
 
-하지만 이렇게 구조적 동시성을 깨는 방법은 독립적인 코루틴 계층을 구성하기 때문에, 취소가 의도한 대로 전파되지 않는다는 한계가 있다. 
+하지만 이렇게 구조적 동시성을 깨는 방법은 **독립적인 코루틴 계층**을 구성하기 때문에, **취소가 의도한 대로 전파되지 않는다**는 한계가 있다. 
 
 예를 들어, 2번 코루틴을 취소하면 4번 코루틴에만 취소가 전파될 뿐, 다른 코루틴에는 취소가 전파되지 않는다.
 
@@ -144,10 +143,10 @@ Exception in thread "main @coroutine#3" java.lang.Exception: 5번 코루틴 예�
 SupervisorJob 객체는 **자식 코루틴으로부터 예외를 전파받지 않는 특수한 Job 객체**이다. 예외를 전파받지 않기 때문에 하나의 자식 코루틴에서 예외가 발생해도, 다른 자식 코루틴에게 영향을 미치지 않는다.
 
 ```kotlin 
-// 부모 Job 명시적으로 지정 가능 
+// parent 인자에 부모 Job 명시적으로 지정 가능 
 public fun SupervisorJob(parent: Job? = null) : CompletableJob = SupervisorJobImpl(parent)
 
-// 자식 코루틴이 취소되지 않는 이유 
+// 자식 코루틴이 취소되지 않도록 메서드 오버라이딩 
 private class SupervisorJobImpl(parent: Job?) : JobImpl(parent) {
     override fun childCancelled(cause: Throwable): Boolean = false
 }
@@ -250,17 +249,17 @@ Exception in thread "main @coroutine#2" java.lang.Exception: 4번 코루틴 예�
 [main @coroutine#1] 1번 코루틴 실행
 ```
 
-앞서 살펴본 CoroutineScope(SupervisorJob())로 코루틴 스코프를 새로 생성하는 방법과 이번 방법은 어떤 차이점이 있는 걸까? 
+앞서 살펴본 CoroutineScope(SupervisorJob())로 코루틴 스코프를 생성하는 방법과 이번 방법은 어떤 차이점이 있을까? 
 
-바로 runBlocking의 CoroutineScope로 launch 함수를 실행시켰기 때문에, **runBlocking의 CoroutineContext를 상속 받는다**는 점이다. 
+바로 runBlocking의 CoroutineScope로 launch 함수를 실행시켰기 때문에, **runBlocking의 CoroutineContext를 상속 받는다**는 점이 다르다. 
 
 따라서, 2번과 3번 코루틴의 CoroutineDispatcher, CoroutineExceptionHandler는 runBlocking 코루틴의 CoroutineDispatcher, CoroutineExceptionHandler와 동일하다. 
 
 <img width="476" src="https://github.com/user-attachments/assets/07bc0b97-90ba-4bc4-afe7-7610c0c04ba6" />
 
-위의 그림을 통해 runBlocking과의 구조적 동시성이 깨져있다는 걸 확인할 수 있다. 구조적 동시성을 꺠지 않고 SupervisorJob을 사용할 수는 없을까? 
+위의 그림을 통해 **runBlocking과의 구조적 동시성이 깨져있다**는 걸 확인할 수 있다. 구조적 동시성을 깨지 않고 SupervisorJob을 사용할 수는 없을까? 
 
-바로 다음과 같이 코드를 구현하면 된다. 
+바로 다음과 같이 **parent 인자에 부모 Job을 명시적으로 지정**하면 된다. 
 
 ```kotlin
 import kotlinx.coroutines.*
@@ -294,9 +293,9 @@ fun printWithThread(params: Any) {
 
 <img width="460" src="https://github.com/user-attachments/assets/5d8e8778-d15f-42be-8920-0878c0d4b380" />
 
-위의 그림처럼 runBlocking과의 구조적 동시성을 깨지 않을 수 있다. 
+위의 그림처럼 **runBlocking과의 구조적 동시성을 깨지 않을 수 있다.** 
 
-단, Job 함수를 통해 생성된 Job 객체와 같이, SupervisorJob 함수를 통해 생성된 Job 객체도 자동으로 완료 처리되지 않는다. 
+단, Job 함수를 통해 생성된 Job 객체와 같이, SupervisorJob 함수를 통해 생성된 Job 객체도 **자동으로 완료 처리되지 않는다.** 
 
 그래서 **complete() 함수를 통해 명시적으로 완료 처리**를 해줘야 한다.
 
@@ -330,7 +329,9 @@ fun printWithThread(params: Any) {
 }
 ```
 
-supervisorScope은 **예외 전파를 제한**하면서 runBlocking 코루틴과의 **구조적 동시성을 깨지 않는다.** 그리고 자식 코루틴들이 모두 실행 완료되면, **자동으로 완료 처리**도 해준다. 그래서 complete() 함수로 명시적으로 완료 처리를 할 필요가 없어서 편리하다!
+supervisorScope은 **예외 전파를 제한**하면서 runBlocking 코루틴과의 **구조적 동시성을 깨지 않는다.** 
+
+그리고 자식 코루틴들이 모두 실행 완료되면, **자동으로 완료 처리**도 해준다. 그래서 complete() 함수로 명시적으로 완료 처리를 할 필요가 없다. 
 
 # 2025 안드로이드 탐구 영역 Coroutine 28번 문제
 
