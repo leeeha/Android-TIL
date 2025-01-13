@@ -314,7 +314,7 @@ fun main() = runBlocking {
             printWithThread("2번 코루틴 실행")
         }
 
-        launch{
+        launch {
             delay(100L)
             printWithThread("3번 코루틴 실행")
         }
@@ -333,69 +333,104 @@ supervisorScope은 **예외 전파를 제한**하면서 runBlocking 코루틴과
 
 그리고 자식 코루틴들이 모두 실행 완료되면, **자동으로 완료 처리**도 해준다. 그래서 complete() 함수로 명시적으로 완료 처리를 할 필요가 없다. 
 
-# 2025 안드로이드 탐구 영역 Coroutine 28번 문제
-
-<img width="500" src="https://github.com/user-attachments/assets/1d3d0f90-d948-4fb9-924b-2371df9e3479" />
+### SupervisorJob 사용 시 주의할 점 
 
 ```kotlin 
-// A의 실행
-viewModelScope.launch {
-    // B의 실행
-    launch {
-        coroutineScope {
-            // D의 실행
-            launch { }
-            // E의 실행
-            launch { }
+import kotlinx.coroutines.*
+
+fun main() = runBlocking {
+    launch(SupervisorJob()) {
+        launch {
+            launch {
+                throw Exception("5번 코루틴 예외 발생")
+            }
+            delay(100L)
+            printWithThread("3번 코루틴 실행")
         }
-    }
-    // C의 실행
-    launch {
-        withContext(Dispatchers.IO) {
-            // F의 실행
-            launch { }
+
+        launch{
+            delay(100L)
+            printWithThread("4번 코루틴 실행")
         }
+
+        delay(100L)
+        printWithThread("2번 코루틴 실행")
     }
+
+    delay(1000L)
+    printWithThread("1번 코루틴 실행")
+}
+
+fun printWithThread(params: Any) {
+    println("[${Thread.currentThread().name}] $params")
 }
 ```
 
+```
+Exception in thread "main" java.lang.Exception: 5번 코루틴 예외 발생
+	at MainKt$main$1$1$1$1.invokeSuspend(Main.kt:7)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:108)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:280)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:85)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:59)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:38)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source)
+	at MainKt.main(Main.kt:3)
+	at MainKt.main(Main.kt)
+	Suppressed: kotlinx.coroutines.internal.DiagnosticCoroutineContextException: [StandaloneCoroutine{Cancelling}@1fbc7afb, BlockingEventLoop@45c8e616]
+[main] 1번 코루틴 실행
+```
+
+<img width="485" src="https://github.com/user-attachments/assets/6bf0bcec-c40d-4047-bfa8-a28d81940393" />
+
+코루틴의 부모-자식 관계를 그려보면, 실질적으로 2번 코루틴의 자식으로 하위 코루틴들이 생성되어 있기 때문에 4번 코루틴으로 취소가 전파된다. 즉, SupervisorJob이 예외 전파 제한 역할을 제대로 수행하고 있지 못한 것이다. 그래서 위의 실행 결과를 보면, 1번 코루틴만 실행되고 나머지는 모두 취소된 것을 확인할 수 있다. 
+
+안드로이드에서도 흔히 이와 같은 문제가 발생할 수 있는데, 그 이유는 lifecycleScope, viewModelScope가 내부적으로 SupervisorJob을 사용하고 있기 때문이다. 
+
 ```kotlin 
-// A의 실행
-CoroutinesScope(SupervisorJob()).launch {
-    // B의 실행
-    launch(Job()) { 
-        // D의 실행
-        launch { throw Exception("exception") }
-        // E의 실행
-        launch { }
-    }
-    // C의 실행
-    launch {
-        // F의 실행
-        launch { }
-    }
+class ExampleViewModel : ViewModel() {
+    fun test() { 
+        viewModelScope.launch {
+            launch(CoroutineName("Coroutine1")) {
+                launch(CoroutineName("Coroutine3")) {
+                    throw Exception("예외 발생")
+                }
+                delay(100L)
+                Timber.d("[${Thread.currentThread().name}] Coroutine1 코루틴 실행")
+            }
+            launch(CoroutineName("Coroutine2")) {
+                delay(100L)
+                Timber.d("[${Thread.currentThread().name}] Coroutine2 코루틴 실행")
+            }
+        }
+	}
 }
 ```
 
+그래서 위와 같이 코루틴 스코프를 생성하면, 상위 코루틴으로 예외가 전파되어 2번 코루틴까지 취소된다. 
+
 ```kotlin 
-// A의 실행
-CoroutinesScope(SupervisorJob()).launch {
-    // B의 실행
-    supervisorScope {
-        launch { // Job으로 변경
-            // D의 실행
-            launch { throw Exception("exception") }
-            // E의 실행
-            launch { }
+class ExampleViewModel : ViewModel() {
+    fun test() { 
+        viewModelScope.launch(CoroutineName("Coroutine1")) {
+            launch(CoroutineName("Coroutine3")) {
+                throw Exception("예외 발생")
+            }
+            delay(100L)
+            Timber.d("[${Thread.currentThread().name}] Coroutine1 코루틴 실행")
         }
-    }
-    // C의 실행
-    launch {
-        // F의 실행
-        launch { }
-    }
+        
+        viewModelScope.launch(CoroutineName("Coroutine2")) {
+            delay(100L)
+            Timber.d("[${Thread.currentThread().name}] Coroutine2 코루틴 실행")
+        }
+	}
 }
 ```
+
+이렇게 코드를 수정하면 각 코루틴 스코프에서 독립적인 SupervisorJob 객체를 갖고 있으므로, 3번 코루틴에서 예외가 발생해도 2번 코루틴은 정상적으로 실행된다. 
 
 # 참고자료 
 
