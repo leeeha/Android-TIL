@@ -137,11 +137,9 @@ channel.trySend(1)
 println(channel.isEmpty) // false
 ```
 
-channel의 send 메서드로 데이터를 생성하면, 해당 데이터는 소비되기 전까지 내부적으로 큐에 보관된다. 그래서 위의 코드에서 `channel.isEmpty`가 false를 반환하는 것이다.
+Channel의 trySend() 메서드로 데이터를 생산하면, **소비자가 없어도 suspend 되지 않고 값이 그대로 유실**된다. 즉, 소비자의 소비와 상관없이 데이터를 생산하는 것이다.
 
-📌 **Channel 사용 시 주의할 점**
-
-Channel은 아래 코드처럼 capacity 매개변수가 **기본적으로 RENDEZVOUS로 설정**되어 있어서, **아무도 구독하지 않으면 send() 메서드가 suspend 되어 다음 작업으로 넘어가지 않는다.** 
+단, Channel은 아래 코드처럼 capacity 매개변수가 **기본적으로 RENDEZVOUS로 설정**되어 있어서, **소비자가 없으면 send() 메서드가 suspend** 되어 다음 작업으로 넘어가지 않는다.
 
 ```kotlin 
 public fun <E> Channel(
@@ -151,18 +149,16 @@ public fun <E> Channel(
 ): Channel<E>
 ```
 
-**구독자가 없어도 이벤트를 버퍼에 저장하고 바로 다음 작업으로 넘어가고 싶으면, capacity 옵션을 BUFFERED로 변경해줘야 한다.** capacity 옵션에 따른 send() 메서드의 suspend 여부를 정리하면 다음과 같다. 
+따라서, **구독자가 없어도 이벤트를 버퍼에 저장하고 바로 다음 작업으로 넘어가고 싶으면, capacity 옵션을 BUFFERED로 변경**해야 한다.
+
+참고로 capacity 옵션에 따른 send() 메서드의 suspend 여부를 정리하면 다음과 같다. 
 
 - RENDEZVOUS: 수신자가 없으면 suspend 된다. (버퍼 사용 X)
 - CONFLATED: 가장 최신 값만 유지되며, suspend 되지 않는다. 
 - UNLIMITED: 버퍼 크기가 무제한이며, suspend 되지 않는다. (단, 메모리 관리에 주의 필요)
 - BUFFERED: 버퍼 크기가 64이며, 버퍼 크기가 다 찼을 때만 suspend 된다. (단, BufferOverflow 옵션 변경 가능)
 
-cf) trySend() 메서드는 소비자가 없어도 suspend 되지 않지만, 이벤트는 그대로 유실된다. 
-
-Channel 외에 다른 Hot Stream인 **StateFlow, SharedFlow는 수신자가 없어도 emit()이 suspend 되지 않는다.**
-
-StateFlow는 가장 최신 값 하나만 유지되며, SharedFlow는 수신자가 없으면 suspend 되지 않고 값이 유실된다. 
+Channel 외의 다른 Hot Stream인 **StateFlow, SharedFlow는 수신자가 없어도 emit()이 suspend 되지 않는다.** StateFlow는 가장 최신 값 하나만 유지되며, SharedFlow는 수신자가 없으면 suspend 되지 않고 값이 유실된다. 
 
 ### 하나의 생산자에 다수의 소비자가 존재한다. (멀티캐스트)
 
@@ -277,9 +273,11 @@ Hot Stream은 방송국 **라디오**에 비유할 수 있다.
 추가적으로 **일회성 이벤트를 처리할 때** 기본적으로 준수해야 되는 사항은 다음과 같다. 
 
 1. 구독자가 없을 때 Event가 발생했어도, **나중에 다시 구독자가 생기면 해당 Event가 전달되어야 한다.** (ex. 홈버튼을 눌러 백그라운드에 있을 때 Event가 발생했어도 다시 화면에 진입했을 때 Event를 받아야 한다.) 
-2. Event가 한번 처리(consume)되고 나면, **중복으로** **전달되지 않아야 한다.** (ex. 화면이 다시 보여지거나, 기기가 회전했을 때 이벤트가 다시 전달되면 안 된다.)
+2. Event가 한번 처리(consume)되고 나면, **중복으로 전달되지 않아야 한다.** (ex. 화면이 다시 보여지거나, 기기가 회전했을 때 이벤트가 다시 전달되면 안 된다.)
 
-SharedFlow는 구독자가 없을 때 값이 유실되기 때문에, UI 이벤트를 처리할 때는 이를 해결하기 위한 별도 로직이 필요하다. 
+1번 관점에서 SharedFlow는 구독자가 없을 때 값이 그대로 유실되기 때문에, UI 이벤트 처리에 부적합하다. (값을 캐싱하기 위한 별도 로직이 필요하다.) 
+
+2번 관점에서 LiveData, StateFlow는 마지막 값이 계속 유지되기 때문에, UI 이벤트 처리에 부적합하다. 
 
 # Cold flow → Hot flow 변환 
 
