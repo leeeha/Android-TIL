@@ -131,15 +131,7 @@ CoroutineScope(Dispatchers.Default).launch {
 
 ### 생산자가 소비자의 소비를 신경쓰지 않고 데이터를 생산한다.
 
-```kotlin
-val channel = Channel<Int>(2)
-channel.trySend(1)
-println(channel.isEmpty) // false
-```
-
-Channel의 trySend() 메서드로 데이터를 생산하면, **소비자가 없어도 suspend 되지 않고 값이 그대로 유실**된다. 즉, 소비자의 소비와 상관없이 데이터를 생산하는 것이다.
-
-단, Channel은 아래 코드처럼 capacity 매개변수가 **기본적으로 RENDEZVOUS로 설정**되어 있어서, **소비자가 없으면 send() 메서드가 suspend** 되어 다음 작업으로 넘어가지 않는다.
+Channel은 아래 코드처럼 capacity 매개변수가 **기본적으로 RENDEZVOUS로 설정**되어 있어서, **소비자가 없으면 send() 메서드가 suspend** 되어 다음 작업으로 넘어가지 않는다.
 
 ```kotlin 
 public fun <E> Channel(
@@ -149,7 +141,7 @@ public fun <E> Channel(
 ): Channel<E>
 ```
 
-따라서, **구독자가 없어도 이벤트를 버퍼에 저장하고 바로 다음 작업으로 넘어가고 싶으면, capacity 옵션을 BUFFERED로 변경**해야 한다.
+따라서, **구독자가 없어도 이벤트를 버퍼에 저장하고 바로 다음 작업으로 넘어가고 싶으면, capacity 옵션을 BUFFERED로 변경**해야 한다. 소비자의 소비와 무관하게 데이터를 생산할 수 있다는 점에서 Hot Stream이라고 볼 수 있다. 
 
 참고로 capacity 옵션에 따른 send() 메서드의 suspend 여부를 정리하면 다음과 같다. 
 
