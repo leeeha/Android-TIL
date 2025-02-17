@@ -79,7 +79,7 @@ myWebView.loadData(encodedHtml, "text/html", "base64")
 
 # WebView 커스텀
 
-## WebChromClient
+## WebChromeClient
 
 - **전체 화면 지원** 설정
 - 창을 만들거나 닫고 JavaScript 다이얼로그를 유저에게 전송하는 등 **호스트 앱의 UI를 변경**하는 권한이 필요할 때 사용
