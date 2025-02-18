@@ -30,7 +30,7 @@ WebView는 **네이티브 앱에 내재되어 있는 웹 브라우저**를 의�
 
 ## 기본 설정 (인터넷 권한, 의존성 추가)
 
-```kotlin
+```xml 
 <manifest ... >
     <uses-permission android:name="android.permission.INTERNET" />
     ...
@@ -276,7 +276,7 @@ myWebView.webViewClient = MyWebViewClient()
 
 `WebView`는 커스텀 URL 스키마를 사용하는 링크를 확인하고, 리소스를 요청할 때 제약 사항을 건다. 예를 들어, `shouldOverrideUrlLoading()` 또는 `shouldInterceptRequest()`와 같은 콜백을 구현하는 경우 `WebView`는 유효한 URL인 경우에만 콜백을 호출한다. 
 
-```kotlin
+```html 
 // Wrong
 <a href="showProfile">Show Profile</a>
 
@@ -341,7 +341,7 @@ onBackPressedDispatcher.addCallback {
 
 이러한 액티비티의 기본 동작을 수정하려면, Manifest 파일에서 액티비티의 `configChanges` 속성을 변경해줘야 한다. 
 
-```kotlin
+```xml 
 <activity
 	... 
 	android:configChanges="fontScale|orientation|screenSize"
