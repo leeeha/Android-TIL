@@ -30,7 +30,7 @@ WebView는 **네이티브 앱에 내재되어 있는 웹 브라우저**를 의�
 
 ## 기본 설정 (인터넷 권한, 의존성 추가)
 
-```kotlin
+```xml 
 <manifest ... >
     <uses-permission android:name="android.permission.INTERNET" />
     ...
@@ -276,7 +276,7 @@ myWebView.webViewClient = MyWebViewClient()
 
 `WebView`는 커스텀 URL 스키마를 사용하는 링크를 확인하고, 리소스를 요청할 때 제약 사항을 건다. 예를 들어, `shouldOverrideUrlLoading()` 또는 `shouldInterceptRequest()`와 같은 콜백을 구현하는 경우 `WebView`는 유효한 URL인 경우에만 콜백을 호출한다. 
 
-```kotlin
+```html 
 // Wrong
 <a href="showProfile">Show Profile</a>
 
@@ -339,9 +339,9 @@ onBackPressedDispatcher.addCallback {
 
 런타임에 사용자가 기기를 회전하거나 IME(Input Method Editor)를 닫는 등 기기의 구성이 변경되면, 액티비티 상태가 변경된다. 이로 인해 **액티비티의 재생성 뿐만 아니라, URL을 로드하는 WebView 객체도 재생성**된다. 
 
-이러한 액티비티의 기본 동작을 수정하려면, Manifest 파일에서 액티비티의 `configChanges` 속성을 변경해줘야 한다. 
+이러한 액티비티의 기본 동작을 수정하려면, Manifest 파일에서 액티비티의 [`android:configChanges`](https://developer.android.com/guide/topics/manifest/activity-element?hl=ko&_gl=1*1un0hev*_up*MQ..*_ga*MjQyNTM5MzMxLjE3Mzk4Njc0ODU.*_ga_6HH9YJMN9M*MTczOTg2NzQ4NS4xLjAuMTczOTg2NzQ4NS4wLjAuMTQyNTk2MDAxMQ..#config) 속성을 변경해줘야 한다. 
 
-```kotlin
+```xml 
 <activity
 	... 
 	android:configChanges="fontScale|orientation|screenSize"
@@ -356,7 +356,11 @@ onBackPressedDispatcher.addCallback {
 | `screenSize` | 화면 크기 변화(예: 멀티윈도우, 화면 비율 변경 등) 시 `Activity`가 재생성 되지 않도록 방지 |
 | `keyboardHidden` | IME 키보드에 의해 `Activity`가 재생성 되지 않도록 방지  |
 
-`onConfigurationChanged()` 메서드를 오버라이딩하여 처리할 수도 있다. 아래 예시 코드는 전체 화면 모드를 감지하여 웹뷰의 크기를 리사이징 하는 코드이다. 
+액티비티의 재생성을 중지하면 액티비티는 여전히 실행 상태에 있고, `onConfigurationChanged()` 메서드가 호출된다. 
+
+이 메서드에서는 `Configuration` 객체를 수신하여 해당 필드를 통해 새 기기 구성이 무엇인지 확인할 수 있다. 
+
+에를 들어, WebView에서는 액티비티의 재생성을 중지한 상태로, 아래 코드처럼 `onConfigurationChanged()` 메서드에서 현재 화면의 방향을 확인하고 그에 따라 웹뷰의 크기를 조절할 수 있다. 
 
 ```kotlin
 override fun onConfigurationChanged(newConfig: Configuration) {
@@ -370,6 +374,8 @@ override fun onConfigurationChanged(newConfig: Configuration) {
     }
 }
 ```
+
+반면에, 구성 변경을 기반으로 애플리케이션을 업데이트하지 않아도 될 때는 `onConfigurationChanged()`를 오버라이딩 하지 않아도 된다. 이 경우에는 구성 변경 전에 사용된 모든 리소스가 계속 사용되며 액티비티의 재생성만 피한 것이 된다. 예를 들어, TV 앱은 블루투스 키보드가 연결되거나 분리될 때 반응하지 않을 수도 있다.
 
 # Window 관리
 
