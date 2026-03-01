@@ -122,9 +122,13 @@ suspend 함수는 인터페이스에서도 사용할 수 있다. 따라서 **인
 
 ## coroutineScope
 
-- launch, async처럼 새로운 코루틴을 만들지만, **주어진 함수 블록이 바로 실행**되는 특징이 있다.
-- **새로 생긴 코루틴과 자식 코루틴들이 모두 완료된 이후에 반환**된다.
-- coroutineScope으로 만든 코루틴은 **이전 코루틴의 자식 코루틴**이 된다.
+```kotlin 
+suspend fun <R> coroutineScope(block: suspend CoroutineScope.() -> R): R
+```
+
+- **구조화를 깨지 않는** CoroutineScope 객체를 생성하여, 해당 범위 안에서 **여러 코루틴을 병렬 실행**할 수 있다.
+- coroutineScope 블록 내부 코드가 **실행 완료될 때까지 호출부의 코루틴은 일시 중단**된다.
+- 사용 예시: 여러 API의 실행 결과를 합쳐야 할 때
 
 ```kotlin
 fun main(): Unit = runBlocking {
@@ -155,8 +159,14 @@ suspend fun calculateResult(): Int = coroutineScope {
 
 ## withContext
 
-- 주어진 코드 블록이 즉시 호출되며 새로운 코루틴이 만들어지고, 이 코루틴이 완전히 종료되어야 반환된다. 즉, **기본적으로는 coroutineScope와 동일**하다.
-- 하지만, withContext를 사용할 때 **context에 변화**를 줄 수 있어 다음과 같이 **Dispatcher를 바꿔 사용할 때 활용**할 수 있다.
+```kotlin
+suspend fun <T> withContext(context: CoroutineContext, block: suspend CoroutineScope.() -> T): T
+```
+
+- 기본적으로 coroutineScope와 동일한데, CoroutineContext에 변화를 줄 수 있다. 
+- 주로 코루틴 **실행 스레드 교체 목적**으로 자주 사용된다. 
+- 새로운 코루틴을 생성하지 않고, **기존 코루틴을 유지한 채 CoroutineContext만 변경**한다. 
+- 사용 예시: 네트워크 호출이나 DB 접근 시 Dispatchers.IO로 전환할 때
 
 ```kotlin
 fun main(): Unit = runBlocking {
@@ -165,7 +175,7 @@ fun main(): Unit = runBlocking {
 	printWithThread("END")
 }
 
-suspend fun calculateResult(): Int = withContext(Dispatchers.Default) {
+suspend fun calculateResult(): Int = withContext(Dispatchers.IO) {
 	val num1 = async {
 		delay(1_000L)
 		10
